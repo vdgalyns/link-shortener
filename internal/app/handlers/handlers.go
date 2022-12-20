@@ -27,7 +27,7 @@ func shorten(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	url := string(b)
-	if strings.Contains(url, "http") == false {
+	if !strings.Contains(url, "http") {
 		http.Error(w, "Body is not a link", http.StatusBadRequest)
 		return
 	}
