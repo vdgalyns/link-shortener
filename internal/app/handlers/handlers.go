@@ -8,13 +8,19 @@ import (
 	"strings"
 )
 
-func Handler(w http.ResponseWriter, r *http.Request) {
+func Index(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
 		retrieve(w, r)
 	case http.MethodPost:
 		shorten(w, r)
+	default:
+		notfound(w, r)
 	}
+}
+
+func notfound(w http.ResponseWriter, r *http.Request) {
+	http.NotFound(w, r)
 }
 
 func shorten(w http.ResponseWriter, r *http.Request) {

@@ -6,10 +6,6 @@ import (
 )
 
 func main() {
-	handler := http.HandlerFunc(handlers.Handler)
-	server := http.Server{
-		Addr:    ":8080",
-		Handler: handler,
-	}
-	server.ListenAndServe()
+	http.HandleFunc("/", handlers.Index)
+	http.ListenAndServe(":8080", nil)
 }
