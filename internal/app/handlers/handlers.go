@@ -39,7 +39,8 @@ func shorten(w http.ResponseWriter, r *http.Request) {
 	}
 	id := generator.Make()
 	datastore.Datastore[id] = url
-	output := r.Host + "/" + id
+	protocol := "http://"
+	output := protocol + r.Host + "/" + id
 	w.WriteHeader(http.StatusCreated)
 	w.Write([]byte(output))
 }
