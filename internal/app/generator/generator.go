@@ -2,11 +2,12 @@ package generator
 
 import "math/rand"
 
-func Make() string {
-	var charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
-	b := make([]byte, 6)
-	for i := 0; i < len(b); i++ {
-		b[i] = charset[rand.Intn(len(charset)-1)]
+var letters = []byte("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
+
+func CreateRandomId() string {
+	b := make([]byte, 8)
+	for i := range b {
+		b[i] = letters[rand.Intn(len(letters))]
 	}
 	return string(b)
 }
