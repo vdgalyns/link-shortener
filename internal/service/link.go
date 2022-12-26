@@ -29,7 +29,7 @@ func (s *LinkService) Get(hash string) (string, error) {
 }
 
 func (s *LinkService) Add(url string) (string, error) {
-	valid := s.validateUrl(url)
+	valid := s.validateURL(url)
 	if !valid {
 		return "", ErrLinkIncorrect
 	}
@@ -41,7 +41,7 @@ func (s *LinkService) Add(url string) (string, error) {
 	return hash, nil
 }
 
-func (s *LinkService) validateUrl(url string) bool {
+func (s *LinkService) validateURL(url string) bool {
 	_, domain, _ := strings.Cut(url, "//")
 	if len(domain) == 0 {
 		return false
