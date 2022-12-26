@@ -1,20 +1,18 @@
 package service
 
-import (
-	"github.com/vdgalyns/link-shortener/internal/repository"
-)
+import "github.com/vdgalyns/link-shortener/internal/repository"
 
-type Item interface {
+type Link interface {
+	Get(hash string) (string, error)
 	Add(url string) (string, error)
-	Get(id string) (string, error)
 }
 
 type Service struct {
-	Item
+	Link
 }
 
-func NewService(repositories *repository.Repository) *Service {
+func NewService(repository *repository.Repository) *Service {
 	return &Service{
-		Item: NewItemService(repositories.Item),
+		Link: NewLinkService(repository.Link),
 	}
 }

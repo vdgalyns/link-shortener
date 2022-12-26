@@ -13,9 +13,10 @@ func NewApp() {
 	services := service.NewService(repositories)
 	handlers := handler.NewHandler(services)
 
-	http.HandleFunc("/", handlers.Handler)
-	err := http.ListenAndServe(":8080", nil)
-	if err != nil {
-		log.Fatal(err)
+	handlerIndex := http.HandlerFunc(handlers.Index)
+	server := &http.Server{
+		Addr: ":8080",
+		Handler: handlerIndex,
 	}
+	log.Fatal(server.ListenAndServe())
 }

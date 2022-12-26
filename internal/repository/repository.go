@@ -1,16 +1,16 @@
 package repository
 
-type Item interface {
-	Add(id string, url string) error
-	Get(id string) (string, error)
+type Link interface {
+	Get(hash string) (string, error)
+	Add(hash string, url string) error
 }
 
 type Repository struct {
-	Item
+	Link
 }
 
 func NewRepository() *Repository {
 	return &Repository{
-		Item: NewItemLocalStorageRepository(),
+		Link: NewLinkLocalStorageRepository(),
 	}
 }

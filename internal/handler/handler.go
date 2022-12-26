@@ -1,17 +1,24 @@
 package handler
 
 import (
+	"errors"
+	"fmt"
 	"github.com/vdgalyns/link-shortener/internal/service"
 	"io"
 	"net/http"
 	"strings"
 )
 
+var (
+	ErrReadLink    = errors.New("error read link")
+	ErrLinkIsEmpty = errors.New("link cannot be empty")
+)
+
 type Handler struct {
 	services *service.Service
 }
 
-func (h *Handler) Handler(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) Index(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
 		h.Get(w, r)
@@ -23,17 +30,13 @@ func (h *Handler) Handler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) Get(w http.ResponseWriter, r *http.Request) {
-	var _, id, _ = strings.Cut(r.URL.Path, "/")
-	if id == "" {
-		http.Error(w, "url is incorrect", http.StatusBadRequest)
-		return
-	}
-	v, err := h.services.Get(id)
+	_, hash, _ := strings.Cut(r.URL.Path, "/")
+	url, err := h.services.Link.Get(hash)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	w.Header().Set("Location", v)
+	w.Header().Set("Location", url)
 	w.WriteHeader(http.StatusTemporaryRedirect)
 	w.Write([]byte{})
 }
@@ -41,28 +44,28 @@ func (h *Handler) Get(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) Add(w http.ResponseWriter, r *http.Request) {
 	b, err := io.ReadAll(r.Body)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, ErrReadLink.Error(), http.StatusBadRequest)
 		return
 	}
 	if len(b) == 0 {
-		http.Error(w, "url not passed", http.StatusBadRequest)
+		http.Error(w, ErrLinkIsEmpty.Error(), http.StatusBadRequest)
 		return
 	}
-	url := string(b)
-	if _, domain, _ := strings.Cut(url, "//"); len(domain) == 0 {
-		http.Error(w, "this is not an url", http.StatusBadRequest)
-		return
-	}
-	id, err := h.services.Add(url)
+	s := string(b)
+	hash, err := h.services.Link.Add(s)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	output := "http://" + r.Host + "/" + id
+	// TODO: статичный протокол (поменять на определение текущего)
+	link := fmt.Sprintf("http://%s/%s", r.Host, hash)
+	w.Header().Set("Content-Type", "text/plain")
 	w.WriteHeader(http.StatusCreated)
-	w.Write([]byte(output))
+	w.Write([]byte(link))
 }
 
 func NewHandler(services *service.Service) *Handler {
-	return &Handler{services: services}
+	return &Handler{
+		services: services,
+	}
 }
