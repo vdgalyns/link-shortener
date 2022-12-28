@@ -12,6 +12,8 @@ var (
 	ErrLinkIncorrect = errors.New("link incorrect")
 )
 
+const hashLen int = 6
+
 type LinkService struct {
 	repository repository.Link
 }
@@ -47,7 +49,7 @@ func (s *LinkService) validateURL(url string) bool {
 		return false
 	}
 	name, zone, _ := strings.Cut(domain, ".")
-	if len(name) == 0 || len(zone) == 0 {
+	if len(name) == 0 || len(zone) < 2 {
 		return false
 	}
 	return true
@@ -55,14 +57,20 @@ func (s *LinkService) validateURL(url string) bool {
 
 func (s *LinkService) createHash(url string) string {
 	data := []byte(url)
-	hash := fmt.Sprintf("%x", md5.Sum(data))
-	return hash
+	sum := fmt.Sprintf("%x", md5.Sum(data))
+	hash := strings.Builder{}
+	for i, v := range sum {
+		if i < hashLen {
+			hash.WriteString(string(v))
+			continue
+		}
+		break
+	}
+	return hash.String()
 }
 
 func (s *LinkService) validateHash(hash string) bool {
-	data := []byte(hash)
-	// TODO: умножение на 2, костыль (не знаю как по другому)
-	return len(data) == md5.Size*2
+	return len(hash) == hashLen
 }
 
 func NewLinkService(repository repository.Link) *LinkService {
