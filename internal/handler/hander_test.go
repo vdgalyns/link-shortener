@@ -38,7 +38,7 @@ func TestHandler_Get(t *testing.T) {
 			want: want{
 				statusCode:  400,
 				contentType: "text/plain; charset=utf-8",
-				response:    "link incorrect",
+				response:    "link not found",
 			},
 		},
 	}
@@ -104,7 +104,7 @@ func TestHandler_Post(t *testing.T) {
 			want: want{
 				statusCode:  201,
 				contentType: "text/plain",
-				response:    "http://example.com/1b556b44a4ee73524fb009e11918fb4f",
+				response:    "http://example.com/1b556b",
 			},
 		},
 	}
