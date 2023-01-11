@@ -11,6 +11,6 @@ type Repository struct {
 
 func NewRepository() *Repository {
 	return &Repository{
-		Link: NewLinkLocalStorageRepository(),
+		Link: NewLinkLocalRepository(),
 	}
 }

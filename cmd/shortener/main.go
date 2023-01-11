@@ -1,8 +1,9 @@
 package main
 
 import (
-	"github.com/vdgalyns/link-shortener/internal/server"
 	"log"
+
+	"github.com/vdgalyns/link-shortener/internal/server"
 )
 
 func main() {
