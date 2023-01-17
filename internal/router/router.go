@@ -16,6 +16,7 @@ func NewRouter(h *handler.Handler) chi.Router {
 
 	r.Get("/{hash}", h.Get)
 	r.Post("/", h.Add)
+	r.Post("/api/shorten", h.AddWithJson)
 
 	return r
 }
