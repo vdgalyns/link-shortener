@@ -34,7 +34,7 @@ func testRequest(t *testing.T, ts *httptest.Server, method, path string, body st
 	return resp.StatusCode, string(respBody)
 }
 
-func testRequestWithJson(t *testing.T, ts *httptest.Server, method, path string, body interface{}) (int, []byte) {
+func testRequestWithJSON(t *testing.T, ts *httptest.Server, method, path string, body interface{}) (int, []byte) {
 	var b bytes.Buffer
 	jsonEncoder := json.NewEncoder(&b)
 	err := jsonEncoder.Encode(body)
@@ -153,7 +153,7 @@ func TestAdd(t *testing.T) {
 	}
 }
 
-func TestAddWithJson(t *testing.T) {
+func TestAddWithJSON(t *testing.T) {
 	ts := NewTestServer()
 	defer ts.Close()
 
@@ -200,7 +200,7 @@ func TestAddWithJson(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			statusCode, body := testRequestWithJson(t, ts, tt.method, tt.path, tt.requestBody)
+			statusCode, body := testRequestWithJSON(t, ts, tt.method, tt.path, tt.requestBody)
 			assert.Equal(t, tt.responseCode, statusCode)
 			if statusCode != http.StatusCreated {
 				assert.Equal(t, tt.responseBody, strings.TrimSuffix(string(body), "\n"))
