@@ -60,7 +60,7 @@ func (h *Handler) Add(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(link))
 }
 
-func (h *Handler) AddWithJson(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) AddWithJSON(w http.ResponseWriter, r *http.Request) {
 	body := BodyWhenAdding{}
 	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
