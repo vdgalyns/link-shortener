@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/go-chi/chi/v5"
+	"github.com/vdgalyns/link-shortener/internal/config"
 	"github.com/vdgalyns/link-shortener/internal/service"
 	"io"
 	"net/http"
@@ -16,6 +17,7 @@ var (
 )
 
 type Handler struct {
+	config   *config.Config
 	services *service.Service
 }
 
@@ -76,7 +78,7 @@ func (h *Handler) AddWithJSON(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// TODO: статичный протокол (поменять на определение текущего)
-	link := fmt.Sprintf("http://%s/%s", r.Host, hash)
+	link := fmt.Sprintf("%s/%s", h.config.BaseURL, hash)
 	response := ResponseWhenAdding{
 		Result: link,
 	}
@@ -90,8 +92,9 @@ func (h *Handler) AddWithJSON(w http.ResponseWriter, r *http.Request) {
 	w.Write(resp)
 }
 
-func NewHandler(services *service.Service) *Handler {
+func NewHandler(services *service.Service, config *config.Config) *Handler {
 	return &Handler{
 		services: services,
+		config:   config,
 	}
 }

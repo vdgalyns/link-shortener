@@ -1,6 +1,8 @@
 package service
 
-import "github.com/vdgalyns/link-shortener/internal/repository"
+import (
+	"github.com/vdgalyns/link-shortener/internal/repository"
+)
 
 type Link interface {
 	Get(hash string) (string, error)
