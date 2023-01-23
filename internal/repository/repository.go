@@ -1,19 +1,21 @@
 package repository
 
-import "github.com/vdgalyns/link-shortener/internal/config"
+import (
+	"github.com/vdgalyns/link-shortener/internal/config"
+)
 
-type Link interface {
+type Linker interface {
 	Get(hash string) (string, error)
 	Add(hash string, url string) error
 }
 
 type Repository struct {
-	Link
+	Linker
 }
 
 func NewRepository(config *config.Config) *Repository {
 	if len(config.FileStoragePath) == 0 {
-		return &Repository{Link: NewLinkMemoryRepository()}
+		return &Repository{NewLinkMemoryRepository()}
 	}
-	return &Repository{Link: NewLinkFileRepository(config.FileStoragePath)}
+	return &Repository{NewLinkFileRepository(config.FileStoragePath)}
 }

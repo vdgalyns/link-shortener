@@ -1,11 +1,5 @@
 package repository
 
-import "errors"
-
-var (
-	ErrLinkNotFound = errors.New("link not found")
-)
-
 type LinkMemoryRepository struct {
 	links map[string]string
 }
@@ -28,7 +22,5 @@ func (r *LinkMemoryRepository) Add(hash string, url string) error {
 }
 
 func NewLinkMemoryRepository() *LinkMemoryRepository {
-	return &LinkMemoryRepository{
-		links: map[string]string{},
-	}
+	return &LinkMemoryRepository{links: map[string]string{}}
 }
