@@ -66,6 +66,7 @@ func NewTestServer() (*httptest.Server, error) {
 
 	r := NewRouter(handlers)
 	ts := httptest.NewServer(r)
+	cfg.BaseURL = ts.URL
 	return ts, nil
 }
 
