@@ -13,8 +13,8 @@ type Service struct {
 	Link
 }
 
-func NewService(repository *repository.Repository) *Service {
+func NewService(repositories *repository.Repository) *Service {
 	return &Service{
-		Link: NewLinkService(repository.Link),
+		Link: NewLinkService(repositories),
 	}
 }

@@ -5,10 +5,12 @@ import (
 	"encoding/json"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/vdgalyns/link-shortener/internal/config"
 	"github.com/vdgalyns/link-shortener/internal/handler"
 	"github.com/vdgalyns/link-shortener/internal/repository"
 	"github.com/vdgalyns/link-shortener/internal/service"
 	"io"
+	"log"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -53,18 +55,25 @@ func testRequestWithJSON(t *testing.T, ts *httptest.Server, method, path string,
 	return resp.StatusCode, respBody
 }
 
-func NewTestServer() *httptest.Server {
-	repositories := repository.NewRepository()
+func NewTestServer() (*httptest.Server, error) {
+	cfg, err := config.NewConfig()
+	if err != nil {
+		return nil, err
+	}
+	repositories := repository.NewRepository(cfg)
 	services := service.NewService(repositories)
-	handlers := handler.NewHandler(services)
+	handlers := handler.NewHandler(services, cfg)
 
 	r := NewRouter(handlers)
 	ts := httptest.NewServer(r)
-	return ts
+	return ts, nil
 }
 
 func TestGet(t *testing.T) {
-	ts := NewTestServer()
+	ts, err := NewTestServer()
+	if err != nil {
+		log.Fatal(err)
+	}
 	defer ts.Close()
 
 	tests := []struct {
@@ -107,7 +116,10 @@ func TestGet(t *testing.T) {
 }
 
 func TestAdd(t *testing.T) {
-	ts := NewTestServer()
+	ts, err := NewTestServer()
+	if err != nil {
+		log.Fatal(err)
+	}
 	defer ts.Close()
 
 	tests := []struct {
@@ -154,7 +166,10 @@ func TestAdd(t *testing.T) {
 }
 
 func TestAddWithJSON(t *testing.T) {
-	ts := NewTestServer()
+	ts, err := NewTestServer()
+	if err != nil {
+		log.Fatal(err)
+	}
 	defer ts.Close()
 
 	type RequestBody struct {

@@ -8,7 +8,10 @@ import (
 )
 
 func main() {
-	cfg := config.NewConfig()
+	cfg, err := config.NewConfig()
+	if err != nil {
+		log.Fatal(err)
+	}
 	srv := server.NewServer(cfg)
 	log.Fatal(srv.ListenAndServe())
 }

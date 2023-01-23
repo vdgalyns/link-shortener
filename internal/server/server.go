@@ -11,7 +11,7 @@ import (
 )
 
 func NewServer(config *config.Config) *http.Server {
-	repositories := repository.NewRepository()
+	repositories := repository.NewRepository(config)
 	services := service.NewService(repositories)
 	handlers := handler.NewHandler(services, config)
 
