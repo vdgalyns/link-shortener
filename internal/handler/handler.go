@@ -27,6 +27,9 @@ type BodyWhenAdding struct {
 type ResponseWhenAdding struct {
 	Result string `json:"result"`
 }
+type ResponseWhenError struct {
+	Error string `json:"error"`
+}
 
 func (h *Handler) Get(w http.ResponseWriter, r *http.Request) {
 	hash := chi.URLParam(r, "hash")
@@ -51,6 +54,7 @@ func (h *Handler) Add(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	s := string(b)
+	fmt.Println("SEND_URL", s)
 	hash, err := h.services.Link.Add(s)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
