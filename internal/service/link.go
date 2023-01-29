@@ -11,7 +11,7 @@ var (
 )
 
 type LinkService struct {
-	repository repository.Link
+	repositories *repository.Repository
 }
 
 func (s *LinkService) Get(hash string) (string, error) {
@@ -19,7 +19,7 @@ func (s *LinkService) Get(hash string) (string, error) {
 	if !valid {
 		return "", ErrLinkIncorrect
 	}
-	url, err := s.repository.Get(hash)
+	url, err := s.repositories.Get(hash)
 	if err != nil {
 		return "", err
 	}
@@ -32,15 +32,15 @@ func (s *LinkService) Add(url string) (string, error) {
 		return "", ErrLinkIncorrect
 	}
 	hash := utils.CreateHash(url)
-	err := s.repository.Add(hash, url)
+	err := s.repositories.Add(hash, url)
 	if err != nil {
 		return "", err
 	}
 	return hash, nil
 }
 
-func NewLinkService(repository repository.Link) *LinkService {
+func NewLinkService(repositories *repository.Repository) *LinkService {
 	return &LinkService{
-		repository: repository,
+		repositories: repositories,
 	}
 }

@@ -1,6 +1,8 @@
 package service
 
-import "github.com/vdgalyns/link-shortener/internal/repository"
+import (
+	"github.com/vdgalyns/link-shortener/internal/repository"
+)
 
 type Link interface {
 	Get(hash string) (string, error)
@@ -11,8 +13,8 @@ type Service struct {
 	Link
 }
 
-func NewService(repository *repository.Repository) *Service {
+func NewService(repositories *repository.Repository) *Service {
 	return &Service{
-		Link: NewLinkService(repository.Link),
+		Link: NewLinkService(repositories),
 	}
 }

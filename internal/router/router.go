@@ -4,6 +4,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/vdgalyns/link-shortener/internal/handler"
+	m "github.com/vdgalyns/link-shortener/internal/router/middleware"
 )
 
 func NewRouter(h *handler.Handler) chi.Router {
@@ -13,9 +14,12 @@ func NewRouter(h *handler.Handler) chi.Router {
 	r.Use(middleware.RealIP)
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
+	r.Use(m.GzipUncompress)
+	r.Use(m.GzipCompress)
 
 	r.Get("/{hash}", h.Get)
 	r.Post("/", h.Add)
+	r.Post("/api/shorten", h.AddWithJSON)
 
 	return r
 }
