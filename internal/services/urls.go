@@ -12,7 +12,7 @@ type Urls struct {
 }
 
 func (u *Urls) Get(hash string) (entities.URL, error) {
-	_, err := entities.ValidateUrlHash(hash)
+	_, err := entities.ValidateURLHash(hash)
 	if err != nil {
 		return entities.URL{}, err
 	}
@@ -20,11 +20,11 @@ func (u *Urls) Get(hash string) (entities.URL, error) {
 }
 
 func (u *Urls) Add(originalUrl, userId string) (string, error) {
-	valid := entities.ValidateUrl(originalUrl)
+	valid := entities.ValidateURL(originalUrl)
 	if !valid {
-		return "", ErrUrlNotValid
+		return "", ErrURLNotValid
 	}
-	hash, err := entities.CreateUrlHash(originalUrl)
+	hash, err := entities.CreateURLHash(originalUrl)
 	if err != nil {
 		return "", err
 	}

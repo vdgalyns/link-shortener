@@ -18,8 +18,8 @@ type ResponseAddJSON struct {
 	Result string `json:"result"`
 }
 type ResponseGetUrls struct {
-	ShortUrl    string `json:"short_url"`
-	OriginalUrl string `json:"original_url"`
+	ShortURL    string `json:"short_url"`
+	OriginalURL string `json:"original_url"`
 }
 
 type Handlers struct {
@@ -44,7 +44,7 @@ func (h *Handlers) Add(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		switch {
 		case errors.Is(err, http.ErrNoCookie), errors.Is(err, cookies.ErrInvalidValue):
-			value, err = entities.CreateUserId()
+			value, err = entities.CreateUserID()
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusBadRequest)
 				return
@@ -79,7 +79,7 @@ func (h *Handlers) AddJSON(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		switch {
 		case errors.Is(err, http.ErrNoCookie), errors.Is(err, cookies.ErrInvalidValue):
-			value, err = entities.CreateUserId()
+			value, err = entities.CreateUserID()
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusBadRequest)
 				return
@@ -124,12 +124,12 @@ func (h *Handlers) GetUrls(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		switch {
 		case errors.Is(err, http.ErrNoCookie), errors.Is(err, cookies.ErrInvalidValue):
-			userId, err := entities.CreateUserId()
+			value, err = entities.CreateUserID()
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusBadRequest)
 				return
 			}
-			err = cookies.WriteSigned(w, http.Cookie{Name: "user_id", Value: userId})
+			err = cookies.WriteSigned(w, http.Cookie{Name: "user_id", Value: value})
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusBadRequest)
 				return
@@ -149,7 +149,7 @@ func (h *Handlers) GetUrls(w http.ResponseWriter, r *http.Request) {
 	}
 	output := make([]ResponseGetUrls, 0)
 	for _, v := range urls {
-		output = append(output, ResponseGetUrls{OriginalUrl: v.OriginalURL, ShortUrl: h.config.BaseURL + "/" + v.Hash})
+		output = append(output, ResponseGetUrls{OriginalURL: v.OriginalURL, ShortURL: h.config.BaseURL + "/" + v.Hash})
 	}
 	outputJson, err := json.Marshal(output)
 	if err != nil {

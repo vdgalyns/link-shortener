@@ -3,6 +3,5 @@ package services
 import "errors"
 
 var (
-	ErrNotFound    = errors.New("not found")
-	ErrUrlNotValid = errors.New("url not valid")
+	ErrURLNotValid = errors.New("url not valid")
 )

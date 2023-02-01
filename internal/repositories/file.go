@@ -24,12 +24,12 @@ func (f *File) read(hash string) (entities.URL, error) {
 	defer file.Close()
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
-		foundUrl := entities.URL{}
-		if err = json.Unmarshal(scanner.Bytes(), &foundUrl); err != nil {
+		foundURL := entities.URL{}
+		if err = json.Unmarshal(scanner.Bytes(), &foundURL); err != nil {
 			return url, err
 		}
-		if foundUrl.Hash == hash {
-			return foundUrl, nil
+		if foundURL.Hash == hash {
+			return foundURL, nil
 		}
 	}
 	if err = scanner.Err(); err != nil {

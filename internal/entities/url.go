@@ -12,25 +12,25 @@ type URL struct {
 	OriginalURL string `json:"original_url"`
 }
 
-const sizeUrlHash = 3
+const sizeURLHash = 3
 
-func CreateUrlHash(originalUrl string) (string, error) {
+func CreateURLHash(originalURL string) (string, error) {
 	h := md5.New()
-	h.Write([]byte(originalUrl))
+	h.Write([]byte(originalURL))
 	s := h.Sum(nil)
-	return hex.EncodeToString(s[:sizeUrlHash]), nil
+	return hex.EncodeToString(s[:sizeURLHash]), nil
 }
 
-func ValidateUrlHash(hash string) (bool, error) {
+func ValidateURLHash(hash string) (bool, error) {
 	b, err := hex.DecodeString(hash)
 	if err != nil {
 		return false, err
 	}
-	return len(b) == sizeUrlHash, nil
+	return len(b) == sizeURLHash, nil
 }
 
-func ValidateUrl(originalUrl string) bool {
-	_, domain, _ := strings.Cut(originalUrl, "//")
+func ValidateURL(originalURL string) bool {
+	_, domain, _ := strings.Cut(originalURL, "//")
 	if len(domain) == 0 {
 		return false
 	}

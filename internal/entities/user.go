@@ -5,10 +5,10 @@ import (
 	"encoding/hex"
 )
 
-const sizeUserId = 8
+const sizeUserID = 8
 
-func CreateUserId() (string, error) {
-	b := make([]byte, sizeUserId)
+func CreateUserID() (string, error) {
+	b := make([]byte, sizeUserID)
 	_, err := rand.Read(b)
 	if err != nil {
 		return "", err
@@ -21,5 +21,5 @@ func ValidateUserId(id string) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	return len(b) == sizeUserId, nil
+	return len(b) == sizeUserID, nil
 }
