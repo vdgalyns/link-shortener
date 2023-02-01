@@ -19,19 +19,19 @@ func (u *Urls) Get(hash string) (entities.URL, error) {
 	return u.repositories.Get(hash)
 }
 
-func (u *Urls) Add(originalUrl, userId string) (string, error) {
-	valid := entities.ValidateURL(originalUrl)
+func (u *Urls) Add(originalURL, userID string) (string, error) {
+	valid := entities.ValidateURL(originalURL)
 	if !valid {
 		return "", ErrURLNotValid
 	}
-	hash, err := entities.CreateURLHash(originalUrl)
+	hash, err := entities.CreateURLHash(originalURL)
 	if err != nil {
 		return "", err
 	}
 	url := entities.URL{
 		Hash:        hash,
-		UserID:      userId,
-		OriginalURL: originalUrl,
+		UserID:      userID,
+		OriginalURL: originalURL,
 	}
 	err = u.repositories.Add(url)
 	if err != nil {
@@ -41,12 +41,12 @@ func (u *Urls) Add(originalUrl, userId string) (string, error) {
 	return readyUrl, nil
 }
 
-func (u *Urls) GetAllByUserId(userId string) ([]entities.URL, error) {
-	_, err := entities.ValidateUserId(userId)
+func (u *Urls) GetAllByUserID(userID string) ([]entities.URL, error) {
+	_, err := entities.ValidateUserID(userID)
 	if err != nil {
 		return nil, err
 	}
-	return u.repositories.GetAllByUserId(userId)
+	return u.repositories.GetAllByUserID(userID)
 }
 
 func NewUrls(repositories *repositories.Repositories, config *config.Config) *Urls {

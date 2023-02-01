@@ -109,14 +109,14 @@ func (h *Handlers) AddJSON(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	output := ResponseAddJSON{Result: url}
-	outputJson, err := json.Marshal(output)
+	outputJSON, err := json.Marshal(output)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
-	w.Write(outputJson)
+	w.Write(outputJSON)
 }
 
 func (h *Handlers) GetUrls(w http.ResponseWriter, r *http.Request) {
@@ -142,7 +142,7 @@ func (h *Handlers) GetUrls(w http.ResponseWriter, r *http.Request) {
 		}
 		return
 	}
-	urls, err := h.services.GetAllByUserId(value)
+	urls, err := h.services.GetAllByUserID(value)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -151,13 +151,13 @@ func (h *Handlers) GetUrls(w http.ResponseWriter, r *http.Request) {
 	for _, v := range urls {
 		output = append(output, ResponseGetUrls{OriginalURL: v.OriginalURL, ShortURL: h.config.BaseURL + "/" + v.Hash})
 	}
-	outputJson, err := json.Marshal(output)
+	outputJSON, err := json.Marshal(output)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
-	w.Write(outputJson)
+	w.Write(outputJSON)
 }
 
 func NewHandlers(services *services.Services, config *config.Config) *Handlers {

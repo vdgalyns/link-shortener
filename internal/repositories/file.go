@@ -72,8 +72,8 @@ func (f *File) Get(hash string) (entities.URL, error) {
 	return f.read(hash)
 }
 
-func (f *File) GetAllByUserId(userId string) ([]entities.URL, error) {
-	return f.readAllByPredicate(userId)
+func (f *File) GetAllByUserID(userID string) ([]entities.URL, error) {
+	return f.readAllByPredicate(userID)
 }
 
 func (f *File) Add(url entities.URL) error {

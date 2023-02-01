@@ -15,10 +15,10 @@ func (m *Memory) Get(hash string) (entities.URL, error) {
 	return entities.URL{}, ErrNotFound
 }
 
-func (m *Memory) GetAllByUserId(userId string) ([]entities.URL, error) {
+func (m *Memory) GetAllByUserID(userID string) ([]entities.URL, error) {
 	urls := make([]entities.URL, 0)
 	for _, url := range m.urls {
-		if url.UserID == userId {
+		if url.UserID == userID {
 			urls = append(urls, url)
 		}
 	}

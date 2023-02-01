@@ -8,8 +8,8 @@ import (
 
 type Kind interface {
 	Get(hash string) (entities.URL, error)
-	Add(originalURL, userId string) (string, error)
-	GetAllByUserId(userID string) ([]entities.URL, error)
+	Add(originalURL, userID string) (string, error)
+	GetAllByUserID(userID string) ([]entities.URL, error)
 }
 
 type Services struct {

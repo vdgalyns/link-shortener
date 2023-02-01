@@ -16,7 +16,7 @@ func CreateUserID() (string, error) {
 	return hex.EncodeToString(b), nil
 }
 
-func ValidateUserId(id string) (bool, error) {
+func ValidateUserID(id string) (bool, error) {
 	b, err := hex.DecodeString(id)
 	if err != nil {
 		return false, err
