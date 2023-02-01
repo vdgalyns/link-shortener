@@ -37,8 +37,8 @@ func (u *Urls) Add(originalURL, userID string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	readyUrl := u.config.BaseURL + "/" + hash
-	return readyUrl, nil
+	readyURL := u.config.BaseURL + "/" + hash
+	return readyURL, nil
 }
 
 func (u *Urls) GetAllByUserID(userID string) ([]entities.URL, error) {
