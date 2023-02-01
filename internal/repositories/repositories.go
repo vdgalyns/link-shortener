@@ -8,7 +8,7 @@ import (
 type Kind interface {
 	Get(hash string) (entities.URL, error)
 	Add(url entities.URL) error
-	GetAllByUserID(userId string) ([]entities.URL, error)
+	GetAllByUserID(userID string) ([]entities.URL, error)
 }
 
 type Repositories struct {
