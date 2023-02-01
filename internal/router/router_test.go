@@ -60,11 +60,11 @@ func NewTestServer() (*httptest.Server, error) {
 	if err != nil {
 		return nil, err
 	}
-	repositories := repositories.NewRepositories(cfg)
-	services := services.NewServices(repositories)
-	handlers := handlers.NewHandlers(services, cfg)
+	repo := repositories.NewRepositories(cfg)
+	serv := services.NewServices(repo, cfg)
+	hand := handlers.NewHandlers(serv, cfg)
 
-	r := NewRouter(handlers)
+	r := NewRouter(hand)
 	ts := httptest.NewServer(r)
 	cfg.BaseURL = ts.URL
 	return ts, nil
@@ -89,14 +89,14 @@ func TestGet(t *testing.T) {
 			method:       http.MethodGet,
 			path:         "/abc123",
 			responseCode: http.StatusBadRequest,
-			responseBody: "link not found",
+			responseBody: "not found",
 		},
 		{
 			name:         "IncorrectLink",
 			method:       http.MethodGet,
 			path:         "/abc123456789",
 			responseCode: http.StatusBadRequest,
-			responseBody: "link incorrect",
+			responseBody: "not found",
 		},
 		{
 			name:         "NotExistRoute",
@@ -137,7 +137,7 @@ func TestAdd(t *testing.T) {
 			path:         "/",
 			requestBody:  "",
 			responseCode: http.StatusBadRequest,
-			responseBody: "link cannot be empty",
+			responseBody: "url not valid",
 		},
 		{
 			name:         "IncorrectLink",
@@ -145,7 +145,7 @@ func TestAdd(t *testing.T) {
 			path:         "/",
 			requestBody:  "http:",
 			responseCode: http.StatusBadRequest,
-			responseBody: "link incorrect",
+			responseBody: "url not valid",
 		},
 		{
 			name:         "CorrectLink",
@@ -194,7 +194,7 @@ func TestAddWithJSON(t *testing.T) {
 			path:         "/api/shorten",
 			requestBody:  RequestBody{},
 			responseCode: http.StatusBadRequest,
-			responseBody: "link cannot be empty",
+			responseBody: "url not valid",
 		},
 		{
 			name:         "IncorrectLink",
@@ -202,7 +202,7 @@ func TestAddWithJSON(t *testing.T) {
 			path:         "/api/shorten",
 			requestBody:  RequestBody{URL: "http"},
 			responseCode: http.StatusBadRequest,
-			responseBody: "link incorrect",
+			responseBody: "url not valid",
 		},
 		{
 			name:         "CorrectLink",

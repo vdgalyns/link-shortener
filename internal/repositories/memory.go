@@ -6,9 +6,9 @@ type Memory struct {
 	urls []entities.URL
 }
 
-func (m *Memory) Get(id string) (entities.URL, error) {
+func (m *Memory) Get(hash string) (entities.URL, error) {
 	for _, url := range m.urls {
-		if url.ID == id {
+		if url.Hash == hash {
 			return url, nil
 		}
 	}
@@ -26,7 +26,7 @@ func (m *Memory) GetAllByUserId(userId string) ([]entities.URL, error) {
 }
 
 func (m *Memory) Add(url entities.URL) error {
-	_, err := m.Get(url.ID)
+	_, err := m.Get(url.Hash)
 	if err != nil {
 		m.urls = append(m.urls, url)
 	}

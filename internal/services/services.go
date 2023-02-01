@@ -7,8 +7,8 @@ import (
 )
 
 type Kind interface {
-	Get(id string) (entities.URL, error)
-	Add(originalUrl string) (string, error)
+	Get(hash string) (entities.URL, error)
+	Add(originalUrl, userId string) (string, error)
 	GetAllByUserId(userId string) ([]entities.URL, error)
 }
 

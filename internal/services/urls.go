@@ -11,32 +11,33 @@ type Urls struct {
 	config       *config.Config
 }
 
-func (u *Urls) Get(id string) (entities.URL, error) {
-	_, err := entities.ValidateUrlId(id)
+func (u *Urls) Get(hash string) (entities.URL, error) {
+	_, err := entities.ValidateUrlHash(hash)
 	if err != nil {
 		return entities.URL{}, err
 	}
-	return u.repositories.Get(id)
+	return u.repositories.Get(hash)
 }
 
-func (u *Urls) Add(originalUrl string) (string, error) {
+func (u *Urls) Add(originalUrl, userId string) (string, error) {
 	valid := entities.ValidateUrl(originalUrl)
 	if !valid {
 		return "", ErrUrlNotValid
 	}
-	id, err := entities.CreateUrlId()
+	hash, err := entities.CreateUrlHash(originalUrl)
 	if err != nil {
 		return "", err
 	}
 	url := entities.URL{
-		ID:          id,
+		Hash:        hash,
+		UserID:      userId,
 		OriginalURL: originalUrl,
 	}
 	err = u.repositories.Add(url)
 	if err != nil {
 		return "", err
 	}
-	readyUrl := u.config.BaseURL + "/" + id
+	readyUrl := u.config.BaseURL + "/" + hash
 	return readyUrl, nil
 }
 

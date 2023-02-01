@@ -40,12 +40,32 @@ func (h *Handlers) Get(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handlers) Add(w http.ResponseWriter, r *http.Request) {
+	value, err := cookies.ReadSigned(r, "user_id")
+	if err != nil {
+		switch {
+		case errors.Is(err, http.ErrNoCookie), errors.Is(err, cookies.ErrInvalidValue):
+			value, err = entities.CreateUserId()
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusBadRequest)
+				return
+			}
+			err = cookies.WriteSigned(w, http.Cookie{Name: "user_id", Value: value})
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusBadRequest)
+				return
+			}
+		default:
+			log.Println(err)
+			http.Error(w, "server error", http.StatusBadRequest)
+			return
+		}
+	}
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	url, err := h.services.Add(string(body))
+	url, err := h.services.Add(string(body), value)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -55,15 +75,35 @@ func (h *Handlers) Add(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handlers) AddJSON(w http.ResponseWriter, r *http.Request) {
+	value, err := cookies.ReadSigned(r, "user_id")
+	if err != nil {
+		switch {
+		case errors.Is(err, http.ErrNoCookie), errors.Is(err, cookies.ErrInvalidValue):
+			value, err = entities.CreateUserId()
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusBadRequest)
+				return
+			}
+			err = cookies.WriteSigned(w, http.Cookie{Name: "user_id", Value: value})
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusBadRequest)
+				return
+			}
+		default:
+			log.Println(err)
+			http.Error(w, "server error", http.StatusBadRequest)
+			return
+		}
+	}
 	body := struct {
 		URL string `json:"url"`
 	}{}
-	err := json.NewDecoder(r.Body).Decode(&body)
+	err = json.NewDecoder(r.Body).Decode(&body)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	url, err := h.services.Add(body.URL)
+	url, err := h.services.Add(body.URL, value)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -109,7 +149,7 @@ func (h *Handlers) GetUrls(w http.ResponseWriter, r *http.Request) {
 	}
 	output := make([]ResponseGetUrls, 0)
 	for _, v := range urls {
-		output = append(output, ResponseGetUrls{OriginalUrl: v.OriginalURL, ShortUrl: h.config.BaseURL + "/" + v.ID})
+		output = append(output, ResponseGetUrls{OriginalUrl: v.OriginalURL, ShortUrl: h.config.BaseURL + "/" + v.Hash})
 	}
 	outputJson, err := json.Marshal(output)
 	if err != nil {

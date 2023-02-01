@@ -1,34 +1,32 @@
 package entities
 
 import (
-	"crypto/rand"
+	"crypto/md5"
 	"encoding/hex"
 	"strings"
 )
 
 type URL struct {
-	ID          string `json:"id"`
+	Hash        string `json:"hash"`
 	UserID      string `json:"user_id"`
 	OriginalURL string `json:"original_url"`
 }
 
-const sizeUrlId = 3
+const sizeUrlHash = 3
 
-func CreateUrlId() (string, error) {
-	b := make([]byte, sizeUrlId)
-	_, err := rand.Read(b)
-	if err != nil {
-		return "", err
-	}
-	return hex.EncodeToString(b), nil
+func CreateUrlHash(originalUrl string) (string, error) {
+	h := md5.New()
+	h.Write([]byte(originalUrl))
+	s := h.Sum(nil)
+	return hex.EncodeToString(s[:sizeUrlHash]), nil
 }
 
-func ValidateUrlId(id string) (bool, error) {
-	b, err := hex.DecodeString(id)
+func ValidateUrlHash(hash string) (bool, error) {
+	b, err := hex.DecodeString(hash)
 	if err != nil {
 		return false, err
 	}
-	return len(b) == sizeUrlId, nil
+	return len(b) == sizeUrlHash, nil
 }
 
 func ValidateUrl(originalUrl string) bool {
