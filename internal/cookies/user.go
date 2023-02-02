@@ -7,17 +7,17 @@ import (
 	"github.com/vdgalyns/link-shortener/internal/entities"
 )
 
-const CookieNameUserId = "user_id"
+const CookieNameUserID = "user_id"
 
-func ReadAndCreateCookieUserId(w http.ResponseWriter, r *http.Request) (string, bool, error) {
-	value, err := ReadSigned(r, CookieNameUserId)
+func ReadAndCreateCookieUserID(w http.ResponseWriter, r *http.Request) (string, bool, error) {
+	value, err := ReadSigned(r, CookieNameUserID)
 	if err != nil {
 		if errors.Is(err, http.ErrNoCookie) || errors.Is(err, ErrInvalidValue) {
 			value, err = entities.CreateUserID()
 			if err != nil {
 				return value, false, err
 			}
-			err = WriteSigned(w, http.Cookie{Name: CookieNameUserId, Value: value})
+			err = WriteSigned(w, http.Cookie{Name: CookieNameUserID, Value: value})
 			if err != nil {
 				return value, false, err
 			}
