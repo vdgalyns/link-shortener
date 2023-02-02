@@ -2,15 +2,12 @@ package handlers
 
 import (
 	"encoding/json"
-	"errors"
 	"io"
-	"log"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/vdgalyns/link-shortener/internal/config"
 	"github.com/vdgalyns/link-shortener/internal/cookies"
-	"github.com/vdgalyns/link-shortener/internal/entities"
 	"github.com/vdgalyns/link-shortener/internal/services"
 )
 
@@ -40,25 +37,10 @@ func (h *Handlers) Get(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handlers) Add(w http.ResponseWriter, r *http.Request) {
-	value, err := cookies.ReadSigned(r, "user_id")
+	value, _, err := cookies.ReadAndCreateCookieUserId(w, r)
 	if err != nil {
-		switch {
-		case errors.Is(err, http.ErrNoCookie), errors.Is(err, cookies.ErrInvalidValue):
-			value, err = entities.CreateUserID()
-			if err != nil {
-				http.Error(w, err.Error(), http.StatusBadRequest)
-				return
-			}
-			err = cookies.WriteSigned(w, http.Cookie{Name: "user_id", Value: value})
-			if err != nil {
-				http.Error(w, err.Error(), http.StatusBadRequest)
-				return
-			}
-		default:
-			log.Println(err)
-			http.Error(w, "server error", http.StatusBadRequest)
-			return
-		}
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
 	}
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
@@ -75,25 +57,10 @@ func (h *Handlers) Add(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handlers) AddJSON(w http.ResponseWriter, r *http.Request) {
-	value, err := cookies.ReadSigned(r, "user_id")
+	value, _, err := cookies.ReadAndCreateCookieUserId(w, r)
 	if err != nil {
-		switch {
-		case errors.Is(err, http.ErrNoCookie), errors.Is(err, cookies.ErrInvalidValue):
-			value, err = entities.CreateUserID()
-			if err != nil {
-				http.Error(w, err.Error(), http.StatusBadRequest)
-				return
-			}
-			err = cookies.WriteSigned(w, http.Cookie{Name: "user_id", Value: value})
-			if err != nil {
-				http.Error(w, err.Error(), http.StatusBadRequest)
-				return
-			}
-		default:
-			log.Println(err)
-			http.Error(w, "server error", http.StatusBadRequest)
-			return
-		}
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
 	}
 	body := struct {
 		URL string `json:"url"`
@@ -120,26 +87,14 @@ func (h *Handlers) AddJSON(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handlers) GetUrls(w http.ResponseWriter, r *http.Request) {
-	value, err := cookies.ReadSigned(r, "user_id")
+	value, exist, err := cookies.ReadAndCreateCookieUserId(w, r)
 	if err != nil {
-		switch {
-		case errors.Is(err, http.ErrNoCookie), errors.Is(err, cookies.ErrInvalidValue):
-			value, err = entities.CreateUserID()
-			if err != nil {
-				http.Error(w, err.Error(), http.StatusBadRequest)
-				return
-			}
-			err = cookies.WriteSigned(w, http.Cookie{Name: "user_id", Value: value})
-			if err != nil {
-				http.Error(w, err.Error(), http.StatusBadRequest)
-				return
-			}
-			w.WriteHeader(http.StatusNoContent)
-			w.Write([]byte{})
-		default:
-			log.Println(err)
-			http.Error(w, "server error", http.StatusBadRequest)
-		}
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	if !exist {
+		w.WriteHeader(http.StatusNoContent)
+		w.Write([]byte{})
 		return
 	}
 	urls, err := h.services.GetAllByUserID(value)
