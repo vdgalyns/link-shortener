@@ -21,6 +21,7 @@ func NewRouter(h *handlers.Handlers) chi.Router {
 	r.Post("/", h.Add)
 	r.Post("/api/shorten", h.AddJSON)
 	r.Get("/api/user/urls", h.GetUrls)
+	r.Get("/ping", h.Ping)
 
 	return r
 }

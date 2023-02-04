@@ -120,6 +120,15 @@ func (h *Handlers) GetUrls(w http.ResponseWriter, r *http.Request) {
 	w.Write(outputJSON)
 }
 
+func (h *Handlers) Ping(w http.ResponseWriter, r *http.Request) {
+	err := h.services.Ping()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.Write([]byte{})
+}
+
 func NewHandlers(services *services.Services, config *config.Config) *Handlers {
 	return &Handlers{
 		services: services,

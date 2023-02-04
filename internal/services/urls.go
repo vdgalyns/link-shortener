@@ -49,6 +49,10 @@ func (u *Urls) GetAllByUserID(userID string) ([]entities.URL, error) {
 	return u.repositories.GetAllByUserID(userID)
 }
 
+func (u *Urls) Ping() error {
+	return u.repositories.Database.Ping()
+}
+
 func NewUrls(repositories *repositories.Repositories, config *config.Config) *Urls {
 	return &Urls{
 		repositories: repositories,

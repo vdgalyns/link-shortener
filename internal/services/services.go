@@ -10,6 +10,7 @@ type Kind interface {
 	Get(hash string) (entities.URL, error)
 	Add(originalURL, userID string) (string, error)
 	GetAllByUserID(userID string) ([]entities.URL, error)
+	Ping() error
 }
 
 type Services struct {
