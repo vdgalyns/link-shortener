@@ -6,6 +6,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/vdgalyns/link-shortener/internal/config"
+	"github.com/vdgalyns/link-shortener/internal/database"
 	"github.com/vdgalyns/link-shortener/internal/handlers"
 	"github.com/vdgalyns/link-shortener/internal/repositories"
 	"github.com/vdgalyns/link-shortener/internal/services"
@@ -60,7 +61,8 @@ func NewTestServer() (*httptest.Server, error) {
 	if err != nil {
 		return nil, err
 	}
-	repo := repositories.NewRepositories(cfg)
+	db, _ := database.NewDatabase(cfg.DatabaseDSN)
+	repo := repositories.NewRepositories(cfg, db)
 	serv := services.NewServices(repo, cfg)
 	hand := handlers.NewHandlers(serv, cfg)
 

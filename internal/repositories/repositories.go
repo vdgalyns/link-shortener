@@ -22,10 +22,10 @@ type Repositories struct {
 
 func NewRepositories(config *config.Config, database *sql.DB) *Repositories {
 	repositories := new(Repositories)
-	if len(config.DatabaseDSN) > 0 {
+	if len(config.DatabaseDSN) != 0 {
 		repositories.Kind = NewDatabase(database)
 	} else {
-		if len(config.FileStoragePath) > 0 {
+		if len(config.FileStoragePath) != 0 {
 			repositories.Kind = NewFile(config.FileStoragePath)
 		} else {
 			repositories.Kind = NewMemory()

@@ -25,7 +25,7 @@ func NewConfig() (*Config, error) {
 		flag.StringVar(&cfg.FileStoragePath, "f", "data.json", "file storage path")
 	}
 	if flag.Lookup("d") == nil {
-		flag.StringVar(&cfg.DatabaseDSN, "d", "postgres://postgres:password@localhost:5432/my_db", "database dsn")
+		flag.StringVar(&cfg.DatabaseDSN, "d", "", "database dsn")
 	}
 	flag.Parse()
 	if err := env.Parse(&cfg); err != nil {
