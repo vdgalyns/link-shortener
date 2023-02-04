@@ -4,6 +4,7 @@ import (
 	"log"
 
 	"github.com/vdgalyns/link-shortener/internal/config"
+	"github.com/vdgalyns/link-shortener/internal/database"
 	"github.com/vdgalyns/link-shortener/internal/server"
 )
 
@@ -12,6 +13,11 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	srv := server.NewServer(cfg)
+	db, err := database.NewDatabase(cfg.DatabaseDSN)
+	if err != nil {
+		// log.Fatal(err)
+		// TODO: Сейчас игнонорирую из-за ручки /ping
+	}
+	srv := server.NewServer(cfg, db)
 	log.Fatal(srv.ListenAndServe())
 }

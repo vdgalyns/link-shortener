@@ -1,6 +1,7 @@
 package server
 
 import (
+	"database/sql"
 	"net/http"
 
 	"github.com/vdgalyns/link-shortener/internal/config"
@@ -10,8 +11,8 @@ import (
 	"github.com/vdgalyns/link-shortener/internal/services"
 )
 
-func NewServer(config *config.Config) *http.Server {
-	repo := repositories.NewRepositories(config)
+func NewServer(config *config.Config, database *sql.DB) *http.Server {
+	repo := repositories.NewRepositories(config, database)
 	serv := services.NewServices(repo, config)
 	hand := handlers.NewHandlers(serv, config)
 

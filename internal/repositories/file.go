@@ -89,6 +89,10 @@ func (f *File) Add(url entities.URL) error {
 	return nil
 }
 
+func (f *File) Ping() error {
+	return nil
+}
+
 func NewFile(filePath string) *File {
 	return &File{filePath}
 }

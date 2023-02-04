@@ -16,6 +16,7 @@ func (u *Urls) Get(hash string) (entities.URL, error) {
 	if err != nil {
 		return entities.URL{}, err
 	}
+	u.repositories.Get(hash)
 	return u.repositories.Get(hash)
 }
 
@@ -34,6 +35,7 @@ func (u *Urls) Add(originalURL, userID string) (string, error) {
 		OriginalURL: originalURL,
 	}
 	err = u.repositories.Add(url)
+	u.repositories.Add(url)
 	if err != nil {
 		return "", err
 	}
@@ -50,7 +52,7 @@ func (u *Urls) GetAllByUserID(userID string) ([]entities.URL, error) {
 }
 
 func (u *Urls) Ping() error {
-	return u.repositories.Database.Ping()
+	return u.repositories.Ping()
 }
 
 func NewUrls(repositories *repositories.Repositories, config *config.Config) *Urls {

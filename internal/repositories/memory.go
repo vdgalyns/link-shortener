@@ -33,6 +33,10 @@ func (m *Memory) Add(url entities.URL) error {
 	return nil
 }
 
+func (m *Memory) Ping() error {
+	return nil
+}
+
 func NewMemory() *Memory {
 	return &Memory{urls: make([]entities.URL, 0)}
 }
