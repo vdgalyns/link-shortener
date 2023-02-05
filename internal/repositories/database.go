@@ -69,6 +69,28 @@ func (d *Database) Ping() error {
 	return d.db.Ping()
 }
 
+func (d *Database) AddBatch(urls []entities.URL) error {
+	if d.db == nil {
+		return ErrDatabaseNotInitialized
+	}
+	tx, err := d.db.Begin()
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+	stmt, err := d.db.Prepare("INSERT INTO urls (hash, user_id, original_url) VALUES(?,?,?)")
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+	for _, v := range urls {
+		if _, err = stmt.Exec(v.Hash, v.UserID, v.OriginalURL); err != nil {
+			return err
+		}
+	}
+	return tx.Commit()
+}
+
 func NewDatabase(database *sql.DB) *Database {
 	return &Database{db: database}
 }

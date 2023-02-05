@@ -55,6 +55,30 @@ func (u *Urls) Ping() error {
 	return u.repositories.Ping()
 }
 
+func (u *Urls) AddBatch(originalURLs []string, userID string) ([]string, error) {
+	urls := make([]entities.URL, 0, len(originalURLs))
+	for _, v := range originalURLs {
+		valid := entities.ValidateURL(v)
+		if !valid {
+			return nil, ErrURLNotValid
+		}
+		hash, err := entities.CreateURLHash(v)
+		if err != nil {
+			return nil, err
+		}
+		urls = append(urls, entities.URL{OriginalURL: v, UserID: userID, Hash: hash})
+	}
+	err := u.repositories.AddBatch(urls)
+	if err != nil {
+		return nil, err
+	}
+	output := make([]string, 0, len(originalURLs))
+	for _, v := range urls {
+		output = append(output, u.config.BaseURL+"/"+v.Hash)
+	}
+	return output, nil
+}
+
 func NewUrls(repositories *repositories.Repositories, config *config.Config) *Urls {
 	return &Urls{
 		repositories: repositories,

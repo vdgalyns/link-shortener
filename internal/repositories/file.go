@@ -93,6 +93,16 @@ func (f *File) Ping() error {
 	return nil
 }
 
+func (f *File) AddBatch(urls []entities.URL) error {
+	for _, v := range urls {
+		err := f.Add(v)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 func NewFile(filePath string) *File {
 	return &File{filePath}
 }

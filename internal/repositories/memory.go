@@ -37,6 +37,16 @@ func (m *Memory) Ping() error {
 	return nil
 }
 
+func (m *Memory) AddBatch(urls []entities.URL) error {
+	for _, v := range urls {
+		err := m.Add(v)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 func NewMemory() *Memory {
 	return &Memory{urls: make([]entities.URL, 0)}
 }

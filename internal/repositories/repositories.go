@@ -11,6 +11,7 @@ type Kind interface {
 	Add(url entities.URL) error
 	GetAllByUserID(userID string) ([]entities.URL, error)
 	Ping() error
+	AddBatch(urls []entities.URL) error
 }
 type KindDatabase interface {
 	Kind

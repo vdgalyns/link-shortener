@@ -18,6 +18,14 @@ type ResponseGetUrls struct {
 	ShortURL    string `json:"short_url"`
 	OriginalURL string `json:"original_url"`
 }
+type BodyAddBatch struct {
+	CorrelationId string `json:"correlation_id"`
+	OriginalURL   string `json:"original_url"`
+}
+type ResponseAddBatch struct {
+	CorrelationId string `json:"correlation_id"`
+	ShortURL      string `json:"short_url"`
+}
 
 type Handlers struct {
 	services *services.Services
@@ -127,6 +135,40 @@ func (h *Handlers) Ping(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.Write([]byte{})
+}
+
+func (h *Handlers) AddBatch(w http.ResponseWriter, r *http.Request) {
+	value, _, err := cookies.ReadAndCreateCookieUserID(w, r)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	body := make([]BodyAddBatch, 0)
+	err = json.NewDecoder(r.Body).Decode(&body)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	originalURLs := make([]string, 0, len(body))
+	for _, v := range body {
+		originalURLs = append(originalURLs, v.OriginalURL)
+	}
+	readyUrls, err := h.services.AddBatch(originalURLs, value)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	output := make([]ResponseAddBatch, 0, len(body))
+	for i, v := range body {
+		output = append(output, ResponseAddBatch{CorrelationId: v.CorrelationId, ShortURL: readyUrls[i]})
+	}
+	outputJSON, err := json.Marshal(output)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(outputJSON)
 }
 
 func NewHandlers(services *services.Services, config *config.Config) *Handlers {

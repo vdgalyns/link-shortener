@@ -11,6 +11,7 @@ type Kind interface {
 	Add(originalURL, userID string) (string, error)
 	GetAllByUserID(userID string) ([]entities.URL, error)
 	Ping() error
+	AddBatch(originalURLs []string, userID string) ([]string, error)
 }
 
 type Services struct {
