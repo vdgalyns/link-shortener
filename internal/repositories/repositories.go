@@ -13,9 +13,6 @@ type Kind interface {
 	Ping() error
 	AddBatch(urls []entities.URL) error
 }
-type KindDatabase interface {
-	Kind
-}
 
 type Repositories struct {
 	Kind

@@ -2,7 +2,6 @@ package repositories
 
 import (
 	"database/sql"
-	"fmt"
 
 	"github.com/vdgalyns/link-shortener/internal/entities"
 )
@@ -19,7 +18,6 @@ func (d *Database) Get(hash string) (entities.URL, error) {
 	row := d.db.QueryRow("SELECT hash, user_id, original_url FROM urls WHERE hash = $1", hash)
 	err := row.Scan(&url.Hash, &url.UserID, &url.OriginalURL)
 	if err != nil {
-		fmt.Println(err)
 		return entities.URL{}, err
 	}
 	return url, nil

@@ -19,7 +19,7 @@ type ResponseGetUrls struct {
 	OriginalURL string `json:"original_url"`
 }
 type BodyAddBatch struct {
-	CorrelationId string `json:"correlation_id"`
+	CorrelationID string `json:"correlation_id"`
 	OriginalURL   string `json:"original_url"`
 }
 type ResponseAddBatch struct {
@@ -160,7 +160,7 @@ func (h *Handlers) AddBatch(w http.ResponseWriter, r *http.Request) {
 	}
 	output := make([]ResponseAddBatch, 0, len(body))
 	for i, v := range body {
-		output = append(output, ResponseAddBatch{CorrelationId: v.CorrelationId, ShortURL: readyUrls[i]})
+		output = append(output, ResponseAddBatch{CorrelationId: v.CorrelationID, ShortURL: readyUrls[i]})
 	}
 	outputJSON, err := json.Marshal(output)
 	if err != nil {
