@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 
 	"github.com/vdgalyns/link-shortener/internal/config"
@@ -15,6 +16,7 @@ func main() {
 	}
 	db, err := database.NewDatabase(cfg.DatabaseDSN)
 	if err != nil {
+		fmt.Println(err)
 		// log.Fatal(err)
 		// TODO: Сейчас игнонорирую из-за ручки /ping
 	}

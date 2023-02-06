@@ -3,6 +3,7 @@ package repositories
 import (
 	"database/sql"
 	"fmt"
+
 	"github.com/vdgalyns/link-shortener/internal/entities"
 )
 
@@ -29,7 +30,7 @@ func (d *Database) Add(url entities.URL) error {
 		return ErrDatabaseNotInitialized
 	}
 	_, err := d.db.Exec(
-		`INSERT INTO urls (hash, user_id, original_url) VALUES($1, $2, $3)`,
+		"INSERT INTO urls (hash, user_id, original_url) VALUES($1, $2, $3)",
 		url.Hash,
 		url.UserID,
 		url.OriginalURL,
@@ -78,7 +79,7 @@ func (d *Database) AddBatch(urls []entities.URL) error {
 		return err
 	}
 	defer tx.Rollback()
-	stmt, err := d.db.Prepare("INSERT INTO urls (hash, user_id, original_url) VALUES(?,?,?)")
+	stmt, err := tx.Prepare("INSERT INTO urls(hash,user_id,original_url) VALUES($1,$2,$3)")
 	if err != nil {
 		return err
 	}
