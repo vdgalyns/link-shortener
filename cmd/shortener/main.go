@@ -13,11 +13,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	db, err := database.NewDatabase(cfg.DatabaseDSN)
-	if err != nil {
-		// log.Fatal(err)
-		// TODO: Сейчас игнонорирую из-за ручки /ping
-	}
+	db, _ := database.NewDatabase(cfg.DatabaseDSN)
 	srv := server.NewServer(cfg, db)
 	log.Fatal(srv.ListenAndServe())
 }
