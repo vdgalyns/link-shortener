@@ -1,6 +1,8 @@
 package services
 
 import (
+	"errors"
+	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/vdgalyns/link-shortener/internal/config"
 	"github.com/vdgalyns/link-shortener/internal/entities"
 	"github.com/vdgalyns/link-shortener/internal/repositories"
@@ -11,13 +13,12 @@ type Urls struct {
 	config       *config.Config
 }
 
-func (u *Urls) Get(hash string) (entities.URL, error) {
-	_, err := entities.ValidateURLHash(hash)
+func (u *Urls) Get(id string) (entities.Link, error) {
+	_, err := entities.ValidateLinkID(id)
 	if err != nil {
-		return entities.URL{}, err
+		return entities.Link{}, err
 	}
-	u.repositories.Get(hash)
-	return u.repositories.Get(hash)
+	return u.repositories.Get(id)
 }
 
 func (u *Urls) Add(originalURL, userID string) (string, error) {
@@ -25,25 +26,34 @@ func (u *Urls) Add(originalURL, userID string) (string, error) {
 	if !valid {
 		return "", ErrURLNotValid
 	}
-	hash, err := entities.CreateURLHash(originalURL)
+	linkID, err := entities.CreateLinkID()
 	if err != nil {
 		return "", err
 	}
-	url := entities.URL{
-		Hash:        hash,
+	link := entities.Link{
+		ID:          linkID,
 		UserID:      userID,
 		OriginalURL: originalURL,
 	}
-	err = u.repositories.Add(url)
-	u.repositories.Add(url)
+	err = u.repositories.Add(link)
+	var pgErr *pgconn.PgError
+	if errors.As(err, &pgErr) {
+		if pgErr.Code == "23505" {
+			existedLink, err := u.repositories.GetByOriginalURL(link.OriginalURL)
+			if err != nil {
+				return "", err
+			}
+			return u.config.BaseURL + "/" + existedLink.ID, ErrURLIsExist
+		}
+	}
 	if err != nil {
 		return "", err
 	}
-	readyURL := u.config.BaseURL + "/" + hash
+	readyURL := u.config.BaseURL + "/" + linkID
 	return readyURL, nil
 }
 
-func (u *Urls) GetAllByUserID(userID string) ([]entities.URL, error) {
+func (u *Urls) GetAllByUserID(userID string) ([]entities.Link, error) {
 	_, err := entities.ValidateUserID(userID)
 	if err != nil {
 		return nil, err
@@ -56,25 +66,29 @@ func (u *Urls) Ping() error {
 }
 
 func (u *Urls) AddBatch(originalURLs []string, userID string) ([]string, error) {
-	urls := make([]entities.URL, 0, len(originalURLs))
-	for _, v := range originalURLs {
-		valid := entities.ValidateURL(v)
+	links := make([]entities.Link, 0, len(originalURLs))
+	for _, originalURL := range originalURLs {
+		valid := entities.ValidateURL(originalURL)
 		if !valid {
 			return nil, ErrURLNotValid
 		}
-		hash, err := entities.CreateURLHash(v)
+		linkID, err := entities.CreateLinkID()
 		if err != nil {
 			return nil, err
 		}
-		urls = append(urls, entities.URL{OriginalURL: v, UserID: userID, Hash: hash})
+		link := entities.Link{
+			ID:          linkID,
+			UserID:      userID,
+			OriginalURL: originalURL,
+		}
+		links = append(links, link)
 	}
-	err := u.repositories.AddBatch(urls)
-	if err != nil {
+	if err := u.repositories.AddBatch(links); err != nil {
 		return nil, err
 	}
 	output := make([]string, 0, len(originalURLs))
-	for _, v := range urls {
-		output = append(output, u.config.BaseURL+"/"+v.Hash)
+	for _, link := range links {
+		output = append(output, u.config.BaseURL+"/"+link.ID)
 	}
 	return output, nil
 }

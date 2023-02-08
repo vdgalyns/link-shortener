@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"errors"
 	"io"
 	"net/http"
 
@@ -55,13 +56,18 @@ func (h *Handlers) Add(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	url, err := h.services.Add(string(body), value)
+	shortUrl, err := h.services.Add(string(body), value)
+	statusCode := http.StatusCreated
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
+		if errors.Is(err, services.ErrURLIsExist) {
+			statusCode = http.StatusConflict
+		} else {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
 	}
-	w.WriteHeader(http.StatusCreated)
-	w.Write([]byte(url))
+	w.WriteHeader(statusCode)
+	w.Write([]byte(shortUrl))
 }
 
 func (h *Handlers) AddJSON(w http.ResponseWriter, r *http.Request) {
@@ -78,19 +84,24 @@ func (h *Handlers) AddJSON(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	url, err := h.services.Add(body.URL, value)
+	shortUrl, err := h.services.Add(body.URL, value)
+	statusCode := http.StatusCreated
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
+		if errors.Is(err, services.ErrURLIsExist) {
+			statusCode = http.StatusConflict
+		} else {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
 	}
-	output := ResponseAddJSON{Result: url}
+	output := ResponseAddJSON{Result: shortUrl}
 	outputJSON, err := json.Marshal(output)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusCreated)
+	w.WriteHeader(statusCode)
 	w.Write(outputJSON)
 }
 
@@ -105,19 +116,20 @@ func (h *Handlers) GetUrls(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte{})
 		return
 	}
-	urls, err := h.services.GetAllByUserID(value)
+	links, err := h.services.GetAllByUserID(value)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	if len(urls) == 0 {
+	if len(links) == 0 {
 		w.WriteHeader(http.StatusNoContent)
 		w.Write([]byte{})
 		return
 	}
 	output := make([]ResponseGetUrls, 0)
-	for _, v := range urls {
-		output = append(output, ResponseGetUrls{OriginalURL: v.OriginalURL, ShortURL: h.config.BaseURL + "/" + v.Hash})
+	for _, link := range links {
+		responseURL := ResponseGetUrls{OriginalURL: link.OriginalURL, ShortURL: h.config.BaseURL + "/" + link.ID}
+		output = append(output, responseURL)
 	}
 	outputJSON, err := json.Marshal(output)
 	if err != nil {
@@ -160,7 +172,8 @@ func (h *Handlers) AddBatch(w http.ResponseWriter, r *http.Request) {
 	}
 	output := make([]ResponseAddBatch, 0, len(body))
 	for i, v := range body {
-		output = append(output, ResponseAddBatch{CorrelationID: v.CorrelationID, ShortURL: readyUrls[i]})
+		outputItem := ResponseAddBatch{CorrelationID: v.CorrelationID, ShortURL: readyUrls[i]}
+		output = append(output, outputItem)
 	}
 	outputJSON, err := json.Marshal(output)
 	if err != nil {

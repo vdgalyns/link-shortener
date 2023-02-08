@@ -1,6 +1,6 @@
 module github.com/vdgalyns/link-shortener
 
-go 1.19
+go 1.20
 
 require (
 	github.com/caarlos0/env/v6 v6.10.1
@@ -16,7 +16,7 @@ require (
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20200714003250-2b9c44734f2b // indirect
-	github.com/lib/pq v1.10.7 // indirect
+	github.com/lib/pq v1.10.0 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/rogpeppe/go-internal v1.9.0 // indirect
 	go.uber.org/atomic v1.10.0 // indirect

@@ -3,32 +3,41 @@ package repositories
 import "github.com/vdgalyns/link-shortener/internal/entities"
 
 type Memory struct {
-	urls []entities.URL
+	links []entities.Link
 }
 
-func (m *Memory) Get(hash string) (entities.URL, error) {
-	for _, url := range m.urls {
-		if url.Hash == hash {
-			return url, nil
+func (m *Memory) Get(id string) (entities.Link, error) {
+	for _, link := range m.links {
+		if link.ID == id {
+			return link, nil
 		}
 	}
-	return entities.URL{}, ErrNotFound
+	return entities.Link{}, ErrNotFound
 }
 
-func (m *Memory) GetAllByUserID(userID string) ([]entities.URL, error) {
-	urls := make([]entities.URL, 0)
-	for _, url := range m.urls {
-		if url.UserID == userID {
-			urls = append(urls, url)
+func (m *Memory) GetByOriginalURL(originalURL string) (entities.Link, error) {
+	for _, link := range m.links {
+		if link.OriginalURL == originalURL {
+			return link, nil
 		}
 	}
-	return urls, nil
+	return entities.Link{}, ErrNotFound
 }
 
-func (m *Memory) Add(url entities.URL) error {
-	_, err := m.Get(url.Hash)
+func (m *Memory) GetAllByUserID(userID string) ([]entities.Link, error) {
+	links := make([]entities.Link, 0, len(m.links))
+	for _, link := range m.links {
+		if link.UserID == userID {
+			links = append(links, link)
+		}
+	}
+	return links, nil
+}
+
+func (m *Memory) Add(link entities.Link) error {
+	_, err := m.Get(link.ID)
 	if err != nil {
-		m.urls = append(m.urls, url)
+		m.links = append(m.links, link)
 	}
 	return nil
 }
@@ -37,9 +46,9 @@ func (m *Memory) Ping() error {
 	return nil
 }
 
-func (m *Memory) AddBatch(urls []entities.URL) error {
-	for _, v := range urls {
-		err := m.Add(v)
+func (m *Memory) AddBatch(links []entities.Link) error {
+	for _, link := range links {
+		err := m.Add(link)
 		if err != nil {
 			return err
 		}
@@ -48,5 +57,5 @@ func (m *Memory) AddBatch(urls []entities.URL) error {
 }
 
 func NewMemory() *Memory {
-	return &Memory{urls: make([]entities.URL, 0)}
+	return &Memory{links: make([]entities.Link, 0)}
 }

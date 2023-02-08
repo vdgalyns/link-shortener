@@ -15,8 +15,8 @@ func (f *File) open() (*os.File, error) {
 	return os.OpenFile(f.filePath, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0777)
 }
 
-func (f *File) read(hash string) (entities.URL, error) {
-	url := entities.URL{}
+func (f *File) read(id string) (entities.Link, error) {
+	url := entities.Link{}
 	file, err := f.open()
 	if err != nil {
 		return url, err
@@ -24,12 +24,12 @@ func (f *File) read(hash string) (entities.URL, error) {
 	defer file.Close()
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
-		foundURL := entities.URL{}
-		if err = json.Unmarshal(scanner.Bytes(), &foundURL); err != nil {
+		foundLink := entities.Link{}
+		if err = json.Unmarshal(scanner.Bytes(), &foundLink); err != nil {
 			return url, err
 		}
-		if foundURL.Hash == hash {
-			return foundURL, nil
+		if foundLink.ID == id {
+			return foundLink, nil
 		}
 	}
 	if err = scanner.Err(); err != nil {
@@ -38,50 +38,53 @@ func (f *File) read(hash string) (entities.URL, error) {
 	return url, ErrNotFound
 }
 
-func (f *File) readAllByPredicate(predicate string) ([]entities.URL, error) {
-	urls := make([]entities.URL, 0)
+func (f *File) readAllByPredicate(predicate string) ([]entities.Link, error) {
+	links := make([]entities.Link, 0)
 	file, err := f.open()
 	if err != nil {
-		return urls, err
+		return links, err
 	}
 	defer file.Close()
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
-		url := entities.URL{}
-		if err = json.Unmarshal(scanner.Bytes(), &url); err != nil {
-			return urls, err
+		link := entities.Link{}
+		if err = json.Unmarshal(scanner.Bytes(), &link); err != nil {
+			return links, err
 		}
-		if url.OriginalURL == predicate || url.Hash == predicate || url.UserID == predicate {
-			urls = append(urls, url)
+		if link.OriginalURL == predicate || link.ID == predicate || link.UserID == predicate {
+			links = append(links, link)
 		}
 	}
-	err = scanner.Err()
-	return urls, err
+	return links, scanner.Err()
 }
 
-func (f *File) write(url entities.URL) error {
+func (f *File) write(link entities.Link) error {
 	file, err := f.open()
 	if err != nil {
 		return err
 	}
 	defer file.Close()
-	return json.NewEncoder(file).Encode(url)
+	return json.NewEncoder(file).Encode(link)
 }
 
-func (f *File) Get(hash string) (entities.URL, error) {
-	return f.read(hash)
+func (f *File) Get(id string) (entities.Link, error) {
+	return f.read(id)
 }
 
-func (f *File) GetAllByUserID(userID string) ([]entities.URL, error) {
+func (f *File) GetByOriginalURL(originalURL string) (entities.Link, error) {
+	return f.read(originalURL)
+}
+
+func (f *File) GetAllByUserID(userID string) ([]entities.Link, error) {
 	return f.readAllByPredicate(userID)
 }
 
-func (f *File) Add(url entities.URL) error {
-	_, err := f.read(url.Hash)
+func (f *File) Add(link entities.Link) error {
+	_, err := f.read(link.ID)
 	if err != nil {
 		switch err {
 		case ErrNotFound:
-			return f.write(url)
+			return f.write(link)
 		default:
 			return err
 		}
@@ -93,9 +96,9 @@ func (f *File) Ping() error {
 	return nil
 }
 
-func (f *File) AddBatch(urls []entities.URL) error {
-	for _, v := range urls {
-		err := f.Add(v)
+func (f *File) AddBatch(links []entities.Link) error {
+	for _, link := range links {
+		err := f.Add(link)
 		if err != nil {
 			return err
 		}

@@ -7,9 +7,9 @@ import (
 )
 
 type Kind interface {
-	Get(hash string) (entities.URL, error)
+	Get(id string) (entities.Link, error)
 	Add(originalURL, userID string) (string, error)
-	GetAllByUserID(userID string) ([]entities.URL, error)
+	GetAllByUserID(userID string) ([]entities.Link, error)
 	Ping() error
 	AddBatch(originalURLs []string, userID string) ([]string, error)
 }

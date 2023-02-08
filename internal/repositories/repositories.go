@@ -7,11 +7,12 @@ import (
 )
 
 type Kind interface {
-	Get(hash string) (entities.URL, error)
-	Add(url entities.URL) error
-	GetAllByUserID(userID string) ([]entities.URL, error)
+	Get(id string) (entities.Link, error)
+	GetByOriginalURL(originalURL string) (entities.Link, error)
+	Add(link entities.Link) error
+	GetAllByUserID(userID string) ([]entities.Link, error)
 	Ping() error
-	AddBatch(urls []entities.URL) error
+	AddBatch(links []entities.Link) error
 }
 
 type Repositories struct {
