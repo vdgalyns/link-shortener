@@ -27,7 +27,7 @@ func ReadAndWriteCookieUserID(next http.Handler) http.Handler {
 				// Записываем в куки результат
 				errWriteCookie := cookies.WriteSigned(w, newCookie)
 				if errWriteCookie != nil {
-					http.Error(w, errCreateUserID.Error(), http.StatusBadRequest)
+					http.Error(w, errWriteCookie.Error(), http.StatusBadRequest)
 					return
 				}
 			} else {
