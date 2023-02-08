@@ -13,12 +13,12 @@ type Urls struct {
 	config       *config.Config
 }
 
-func (u *Urls) Get(id string) (entities.Link, error) {
-	_, err := entities.ValidateLinkID(id)
+func (u *Urls) Get(hash string) (entities.Link, error) {
+	_, err := entities.ValidateLinkHash(hash)
 	if err != nil {
 		return entities.Link{}, err
 	}
-	return u.repositories.Get(id)
+	return u.repositories.Get(hash)
 }
 
 func (u *Urls) Add(originalURL, userID string) (string, error) {
@@ -26,12 +26,12 @@ func (u *Urls) Add(originalURL, userID string) (string, error) {
 	if !valid {
 		return "", ErrURLNotValid
 	}
-	linkID, err := entities.CreateLinkID()
+	linkHash, err := entities.CreateLinkHash(originalURL)
 	if err != nil {
 		return "", err
 	}
 	link := entities.Link{
-		ID:          linkID,
+		Hash:        linkHash,
 		UserID:      userID,
 		OriginalURL: originalURL,
 	}
@@ -43,13 +43,13 @@ func (u *Urls) Add(originalURL, userID string) (string, error) {
 			if err != nil {
 				return "", err
 			}
-			return u.config.BaseURL + "/" + existedLink.ID, ErrURLIsExist
+			return u.config.BaseURL + "/" + existedLink.Hash, ErrURLIsExist
 		}
 	}
 	if err != nil {
 		return "", err
 	}
-	readyURL := u.config.BaseURL + "/" + linkID
+	readyURL := u.config.BaseURL + "/" + linkHash
 	return readyURL, nil
 }
 
@@ -72,12 +72,12 @@ func (u *Urls) AddBatch(originalURLs []string, userID string) ([]string, error) 
 		if !valid {
 			return nil, ErrURLNotValid
 		}
-		linkID, err := entities.CreateLinkID()
+		linkHash, err := entities.CreateLinkHash(originalURL)
 		if err != nil {
 			return nil, err
 		}
 		link := entities.Link{
-			ID:          linkID,
+			Hash:        linkHash,
 			UserID:      userID,
 			OriginalURL: originalURL,
 		}
@@ -88,7 +88,7 @@ func (u *Urls) AddBatch(originalURLs []string, userID string) ([]string, error) 
 	}
 	output := make([]string, 0, len(originalURLs))
 	for _, link := range links {
-		output = append(output, u.config.BaseURL+"/"+link.ID)
+		output = append(output, u.config.BaseURL+"/"+link.Hash)
 	}
 	return output, nil
 }

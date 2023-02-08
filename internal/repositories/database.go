@@ -10,13 +10,13 @@ type Database struct {
 	db *sql.DB
 }
 
-func (d *Database) Get(id string) (entities.Link, error) {
+func (d *Database) Get(hash string) (entities.Link, error) {
 	if d.db == nil {
 		return entities.Link{}, ErrDatabaseNotInitialized
 	}
 	link := entities.Link{}
-	row := d.db.QueryRow("SELECT id, user_id, original_url FROM shortened_links WHERE id = $1", id)
-	err := row.Scan(&link.ID, &link.UserID, &link.OriginalURL)
+	row := d.db.QueryRow("SELECT hash, user_id, original_url FROM shortened_links WHERE hash = $1", hash)
+	err := row.Scan(&link.Hash, &link.UserID, &link.OriginalURL)
 	if err != nil {
 		return entities.Link{}, err
 	}
@@ -28,8 +28,8 @@ func (d *Database) GetByOriginalURL(originalURL string) (entities.Link, error) {
 		return entities.Link{}, ErrDatabaseNotInitialized
 	}
 	link := entities.Link{}
-	row := d.db.QueryRow("SELECT id, user_id, original_url FROM shortened_links WHERE original_url = $1", originalURL)
-	err := row.Scan(&link.ID, &link.UserID, &link.OriginalURL)
+	row := d.db.QueryRow("SELECT hash, user_id, original_url FROM shortened_links WHERE original_url = $1", originalURL)
+	err := row.Scan(&link.Hash, &link.UserID, &link.OriginalURL)
 	if err != nil {
 		return entities.Link{}, err
 	}
@@ -41,8 +41,8 @@ func (d *Database) Add(link entities.Link) error {
 		return ErrDatabaseNotInitialized
 	}
 	_, err := d.db.Exec(
-		`INSERT INTO shortened_links (id, user_id, original_url) VALUES($1, $2, $3)`,
-		link.ID,
+		`INSERT INTO shortened_links (hash, user_id, original_url) VALUES($1, $2, $3)`,
+		link.Hash,
 		link.UserID,
 		link.OriginalURL,
 	)
@@ -53,7 +53,7 @@ func (d *Database) GetAllByUserID(userID string) ([]entities.Link, error) {
 	if d.db == nil {
 		return nil, ErrDatabaseNotInitialized
 	}
-	rows, err := d.db.Query("SELECT id, user_id, original_url FROM shortened_links WHERE user_id = $1", userID)
+	rows, err := d.db.Query("SELECT hash, user_id, original_url FROM shortened_links WHERE user_id = $1", userID)
 	if err != nil {
 		return nil, err
 	}
@@ -61,7 +61,7 @@ func (d *Database) GetAllByUserID(userID string) ([]entities.Link, error) {
 	links := make([]entities.Link, 0)
 	for rows.Next() {
 		var link entities.Link
-		if err = rows.Scan(&link.ID, &link.UserID, &link.OriginalURL); err != nil {
+		if err = rows.Scan(&link.Hash, &link.UserID, &link.OriginalURL); err != nil {
 			return nil, err
 		}
 		links = append(links, link)
@@ -85,13 +85,13 @@ func (d *Database) AddBatch(links []entities.Link) error {
 		return err
 	}
 	defer tx.Rollback()
-	stmt, err := tx.Prepare("INSERT INTO shortened_links (id, user_id, original_url) VALUES($1, $2, $3)")
+	stmt, err := tx.Prepare("INSERT INTO shortened_links (hash, user_id, original_url) VALUES($1, $2, $3)")
 	if err != nil {
 		return err
 	}
 	defer stmt.Close()
 	for _, link := range links {
-		if _, err = stmt.Exec(link.ID, link.UserID, link.OriginalURL); err != nil {
+		if _, err = stmt.Exec(link.Hash, link.UserID, link.OriginalURL); err != nil {
 			return err
 		}
 	}

@@ -1,31 +1,29 @@
 package entities
 
 import (
-	"crypto/rand"
+	"crypto/md5"
 	"encoding/hex"
 )
 
 type Link struct {
-	ID          string `json:"id"`
+	Hash        string `json:"hash"`
 	UserID      string `json:"user_id"`
 	OriginalURL string `json:"original_url"`
 }
 
-const sizeLinkID = 4
+const sizeLinkHash = 3
 
-func CreateLinkID() (string, error) {
-	b := make([]byte, sizeLinkID)
-	_, err := rand.Read(b)
-	if err != nil {
-		return "", err
-	}
-	return hex.EncodeToString(b), nil
+func CreateLinkHash(originalURL string) (string, error) {
+	h := md5.New()
+	h.Write([]byte(originalURL))
+	s := h.Sum(nil)
+	return hex.EncodeToString(s[:sizeLinkHash]), nil
 }
 
-func ValidateLinkID(id string) (bool, error) {
-	b, err := hex.DecodeString(id)
+func ValidateLinkHash(hash string) (bool, error) {
+	b, err := hex.DecodeString(hash)
 	if err != nil {
 		return false, err
 	}
-	return len(b) == sizeLinkID, nil
+	return len(b) == sizeLinkHash, nil
 }

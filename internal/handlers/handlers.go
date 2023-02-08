@@ -56,7 +56,7 @@ func (h *Handlers) Add(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	shortUrl, err := h.services.Add(string(body), value)
+	shortURL, err := h.services.Add(string(body), value)
 	statusCode := http.StatusCreated
 	if err != nil {
 		if errors.Is(err, services.ErrURLIsExist) {
@@ -67,7 +67,7 @@ func (h *Handlers) Add(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	w.WriteHeader(statusCode)
-	w.Write([]byte(shortUrl))
+	w.Write([]byte(shortURL))
 }
 
 func (h *Handlers) AddJSON(w http.ResponseWriter, r *http.Request) {
@@ -84,7 +84,7 @@ func (h *Handlers) AddJSON(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	shortUrl, err := h.services.Add(body.URL, value)
+	shortURL, err := h.services.Add(body.URL, value)
 	statusCode := http.StatusCreated
 	if err != nil {
 		if errors.Is(err, services.ErrURLIsExist) {
@@ -94,7 +94,7 @@ func (h *Handlers) AddJSON(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-	output := ResponseAddJSON{Result: shortUrl}
+	output := ResponseAddJSON{Result: shortURL}
 	outputJSON, err := json.Marshal(output)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -128,7 +128,7 @@ func (h *Handlers) GetUrls(w http.ResponseWriter, r *http.Request) {
 	}
 	output := make([]ResponseGetUrls, 0)
 	for _, link := range links {
-		responseURL := ResponseGetUrls{OriginalURL: link.OriginalURL, ShortURL: h.config.BaseURL + "/" + link.ID}
+		responseURL := ResponseGetUrls{OriginalURL: link.OriginalURL, ShortURL: h.config.BaseURL + "/" + link.Hash}
 		output = append(output, responseURL)
 	}
 	outputJSON, err := json.Marshal(output)

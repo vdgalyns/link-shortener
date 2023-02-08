@@ -7,7 +7,7 @@ import (
 )
 
 type Kind interface {
-	Get(id string) (entities.Link, error)
+	Get(hash string) (entities.Link, error)
 	Add(originalURL, userID string) (string, error)
 	GetAllByUserID(userID string) ([]entities.Link, error)
 	Ping() error

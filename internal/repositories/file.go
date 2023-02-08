@@ -15,7 +15,7 @@ func (f *File) open() (*os.File, error) {
 	return os.OpenFile(f.filePath, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0777)
 }
 
-func (f *File) read(id string) (entities.Link, error) {
+func (f *File) read(hash string) (entities.Link, error) {
 	url := entities.Link{}
 	file, err := f.open()
 	if err != nil {
@@ -28,7 +28,7 @@ func (f *File) read(id string) (entities.Link, error) {
 		if err = json.Unmarshal(scanner.Bytes(), &foundLink); err != nil {
 			return url, err
 		}
-		if foundLink.ID == id {
+		if foundLink.Hash == hash {
 			return foundLink, nil
 		}
 	}
@@ -51,7 +51,7 @@ func (f *File) readAllByPredicate(predicate string) ([]entities.Link, error) {
 		if err = json.Unmarshal(scanner.Bytes(), &link); err != nil {
 			return links, err
 		}
-		if link.OriginalURL == predicate || link.ID == predicate || link.UserID == predicate {
+		if link.OriginalURL == predicate || link.Hash == predicate || link.UserID == predicate {
 			links = append(links, link)
 		}
 	}
@@ -67,8 +67,8 @@ func (f *File) write(link entities.Link) error {
 	return json.NewEncoder(file).Encode(link)
 }
 
-func (f *File) Get(id string) (entities.Link, error) {
-	return f.read(id)
+func (f *File) Get(hash string) (entities.Link, error) {
+	return f.read(hash)
 }
 
 func (f *File) GetByOriginalURL(originalURL string) (entities.Link, error) {
@@ -80,7 +80,7 @@ func (f *File) GetAllByUserID(userID string) ([]entities.Link, error) {
 }
 
 func (f *File) Add(link entities.Link) error {
-	_, err := f.read(link.ID)
+	_, err := f.read(link.Hash)
 	if err != nil {
 		switch err {
 		case ErrNotFound:

@@ -6,9 +6,9 @@ type Memory struct {
 	links []entities.Link
 }
 
-func (m *Memory) Get(id string) (entities.Link, error) {
+func (m *Memory) Get(hash string) (entities.Link, error) {
 	for _, link := range m.links {
-		if link.ID == id {
+		if link.Hash == hash {
 			return link, nil
 		}
 	}
@@ -35,7 +35,7 @@ func (m *Memory) GetAllByUserID(userID string) ([]entities.Link, error) {
 }
 
 func (m *Memory) Add(link entities.Link) error {
-	_, err := m.Get(link.ID)
+	_, err := m.Get(link.Hash)
 	if err != nil {
 		m.links = append(m.links, link)
 	}
