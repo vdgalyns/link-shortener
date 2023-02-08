@@ -46,7 +46,7 @@ func (h *Handlers) Get(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handlers) Add(w http.ResponseWriter, r *http.Request) {
-	value, err := cookies.ReadSigned(r, "user_id")
+	value, _, err := cookies.ReadAndCreateCookieUserID(w, r)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -71,7 +71,7 @@ func (h *Handlers) Add(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handlers) AddJSON(w http.ResponseWriter, r *http.Request) {
-	value, err := cookies.ReadSigned(r, "user_id")
+	value, _, err := cookies.ReadAndCreateCookieUserID(w, r)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -106,9 +106,14 @@ func (h *Handlers) AddJSON(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handlers) GetUrls(w http.ResponseWriter, r *http.Request) {
-	value, err := cookies.ReadSigned(r, "user_id")
+	value, exist, err := cookies.ReadAndCreateCookieUserID(w, r)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	if !exist {
+		w.WriteHeader(http.StatusNoContent)
+		w.Write([]byte{})
 		return
 	}
 	links, err := h.services.GetAllByUserID(value)

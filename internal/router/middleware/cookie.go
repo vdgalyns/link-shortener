@@ -2,9 +2,11 @@ package middleware
 
 import (
 	"errors"
+	"fmt"
+	"net/http"
+
 	"github.com/vdgalyns/link-shortener/internal/cookies"
 	"github.com/vdgalyns/link-shortener/internal/entities"
-	"net/http"
 )
 
 func ReadAndWriteCookieUserID(next http.Handler) http.Handler {
@@ -36,6 +38,7 @@ func ReadAndWriteCookieUserID(next http.Handler) http.Handler {
 				return
 			}
 		}
+		fmt.Println("OK", errReadCookie)
 		// Отдаем в handler
 		next.ServeHTTP(w, r)
 	})

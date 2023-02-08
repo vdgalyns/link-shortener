@@ -16,7 +16,7 @@ func NewRouter(h *handlers.Handlers) chi.Router {
 	r.Use(middleware.Recoverer)
 	r.Use(middle.GzipDecompress)
 	r.Use(middle.GzipCompress)
-	r.Use(middle.ReadAndWriteCookieUserID)
+	// r.Use(middle.ReadAndWriteCookieUserID)
 
 	r.Get("/{id}", h.Get)
 	r.Post("/", h.Add)

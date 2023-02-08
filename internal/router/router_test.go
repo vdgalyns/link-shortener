@@ -3,6 +3,13 @@ package router
 import (
 	"bytes"
 	"encoding/json"
+	"io"
+	"log"
+	"net/http"
+	"net/http/httptest"
+	"strings"
+	"testing"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/vdgalyns/link-shortener/internal/config"
@@ -10,12 +17,6 @@ import (
 	"github.com/vdgalyns/link-shortener/internal/handlers"
 	"github.com/vdgalyns/link-shortener/internal/repositories"
 	"github.com/vdgalyns/link-shortener/internal/services"
-	"io"
-	"log"
-	"net/http"
-	"net/http/httptest"
-	"strings"
-	"testing"
 )
 
 func testRequest(t *testing.T, ts *httptest.Server, method, path string, body string) (int, string) {
@@ -161,9 +162,9 @@ func TestAdd(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			/*statusCode, body := testRequest(t, ts, tt.method, tt.path, tt.requestBody)
+			statusCode, body := testRequest(t, ts, tt.method, tt.path, tt.requestBody)
 			assert.Equal(t, tt.responseCode, statusCode)
-			assert.Equal(t, tt.responseBody, strings.TrimSuffix(body, "\n"))*/
+			assert.Equal(t, tt.responseBody, strings.TrimSuffix(body, "\n"))
 		})
 	}
 }
@@ -218,7 +219,7 @@ func TestAddWithJSON(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			/*statusCode, body := testRequestWithJSON(t, ts, tt.method, tt.path, tt.requestBody)
+			statusCode, body := testRequestWithJSON(t, ts, tt.method, tt.path, tt.requestBody)
 			assert.Equal(t, tt.responseCode, statusCode)
 			if statusCode != http.StatusCreated {
 				assert.Equal(t, tt.responseBody, strings.TrimSuffix(string(body), "\n"))
@@ -227,7 +228,7 @@ func TestAddWithJSON(t *testing.T) {
 			responseBody := ResponseBody{}
 			err := json.Unmarshal(body, &responseBody)
 			require.NoError(t, err)
-			assert.Equal(t, tt.responseBody, responseBody)*/
+			assert.Equal(t, tt.responseBody, responseBody)
 		})
 	}
 }
