@@ -150,7 +150,7 @@ func (h *Handlers) Ping(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handlers) AddBatch(w http.ResponseWriter, r *http.Request) {
-	value, err := cookies.ReadSigned(r, "user_id")
+	value, _, err := cookies.ReadAndCreateCookieUserID(w, r)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
