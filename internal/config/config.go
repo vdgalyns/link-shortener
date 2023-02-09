@@ -10,6 +10,7 @@ type Config struct {
 	ServerAddress   string `env:"SERVER_ADDRESS"`
 	BaseURL         string `env:"BASE_URL"`
 	FileStoragePath string `env:"FILE_STORAGE_PATH"`
+	DatabaseDSN     string `env:"DATABASE_DSN"`
 }
 
 func NewConfig() (*Config, error) {
@@ -22,6 +23,9 @@ func NewConfig() (*Config, error) {
 	}
 	if flag.Lookup("f") == nil {
 		flag.StringVar(&cfg.FileStoragePath, "f", "data.json", "file storage path")
+	}
+	if flag.Lookup("d") == nil {
+		flag.StringVar(&cfg.DatabaseDSN, "d", "", "database dsn")
 	}
 	flag.Parse()
 	if err := env.Parse(&cfg); err != nil {

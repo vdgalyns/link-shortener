@@ -3,18 +3,20 @@ package router
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
-	"github.com/vdgalyns/link-shortener/internal/config"
-	"github.com/vdgalyns/link-shortener/internal/handler"
-	"github.com/vdgalyns/link-shortener/internal/repository"
-	"github.com/vdgalyns/link-shortener/internal/service"
 	"io"
 	"log"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+	"github.com/vdgalyns/link-shortener/internal/config"
+	"github.com/vdgalyns/link-shortener/internal/database"
+	"github.com/vdgalyns/link-shortener/internal/handlers"
+	"github.com/vdgalyns/link-shortener/internal/repositories"
+	"github.com/vdgalyns/link-shortener/internal/services"
 )
 
 func testRequest(t *testing.T, ts *httptest.Server, method, path string, body string) (int, string) {
@@ -60,11 +62,12 @@ func NewTestServer() (*httptest.Server, error) {
 	if err != nil {
 		return nil, err
 	}
-	repositories := repository.NewRepository(cfg)
-	services := service.NewService(repositories)
-	handlers := handler.NewHandler(services, cfg)
+	db, _ := database.NewDatabase(cfg.DatabaseDSN)
+	repo := repositories.NewRepositories(cfg, db)
+	serv := services.NewServices(repo, cfg)
+	hand := handlers.NewHandlers(serv, cfg)
 
-	r := NewRouter(handlers)
+	r := NewRouter(hand)
 	ts := httptest.NewServer(r)
 	cfg.BaseURL = ts.URL
 	return ts, nil
@@ -89,14 +92,14 @@ func TestGet(t *testing.T) {
 			method:       http.MethodGet,
 			path:         "/abc123",
 			responseCode: http.StatusBadRequest,
-			responseBody: "link not found",
+			responseBody: "not found",
 		},
 		{
 			name:         "IncorrectLink",
 			method:       http.MethodGet,
 			path:         "/abc123456789",
 			responseCode: http.StatusBadRequest,
-			responseBody: "link incorrect",
+			responseBody: "not found",
 		},
 		{
 			name:         "NotExistRoute",
@@ -137,7 +140,7 @@ func TestAdd(t *testing.T) {
 			path:         "/",
 			requestBody:  "",
 			responseCode: http.StatusBadRequest,
-			responseBody: "link cannot be empty",
+			responseBody: "url not valid",
 		},
 		{
 			name:         "IncorrectLink",
@@ -145,7 +148,7 @@ func TestAdd(t *testing.T) {
 			path:         "/",
 			requestBody:  "http:",
 			responseCode: http.StatusBadRequest,
-			responseBody: "link incorrect",
+			responseBody: "url not valid",
 		},
 		{
 			name:         "CorrectLink",
@@ -194,7 +197,7 @@ func TestAddWithJSON(t *testing.T) {
 			path:         "/api/shorten",
 			requestBody:  RequestBody{},
 			responseCode: http.StatusBadRequest,
-			responseBody: "link cannot be empty",
+			responseBody: "url not valid",
 		},
 		{
 			name:         "IncorrectLink",
@@ -202,7 +205,7 @@ func TestAddWithJSON(t *testing.T) {
 			path:         "/api/shorten",
 			requestBody:  RequestBody{URL: "http"},
 			responseCode: http.StatusBadRequest,
-			responseBody: "link incorrect",
+			responseBody: "url not valid",
 		},
 		{
 			name:         "CorrectLink",
