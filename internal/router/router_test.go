@@ -92,14 +92,14 @@ func TestGet(t *testing.T) {
 			method:       http.MethodGet,
 			path:         "/abc123",
 			responseCode: http.StatusBadRequest,
-			responseBody: "not found",
+			responseBody: "link not found",
 		},
 		{
 			name:         "IncorrectLink",
 			method:       http.MethodGet,
 			path:         "/abc123456789",
 			responseCode: http.StatusBadRequest,
-			responseBody: "not found",
+			responseBody: "link not found",
 		},
 		{
 			name:         "NotExistRoute",
@@ -140,7 +140,7 @@ func TestAdd(t *testing.T) {
 			path:         "/",
 			requestBody:  "",
 			responseCode: http.StatusBadRequest,
-			responseBody: "url not valid",
+			responseBody: "link not valid",
 		},
 		{
 			name:         "IncorrectLink",
@@ -148,7 +148,7 @@ func TestAdd(t *testing.T) {
 			path:         "/",
 			requestBody:  "http:",
 			responseCode: http.StatusBadRequest,
-			responseBody: "url not valid",
+			responseBody: "link not valid",
 		},
 		{
 			name:         "CorrectLink",
@@ -197,7 +197,7 @@ func TestAddWithJSON(t *testing.T) {
 			path:         "/api/shorten",
 			requestBody:  RequestBody{},
 			responseCode: http.StatusBadRequest,
-			responseBody: "url not valid",
+			responseBody: "link not valid",
 		},
 		{
 			name:         "IncorrectLink",
@@ -205,7 +205,7 @@ func TestAddWithJSON(t *testing.T) {
 			path:         "/api/shorten",
 			requestBody:  RequestBody{URL: "http"},
 			responseCode: http.StatusBadRequest,
-			responseBody: "url not valid",
+			responseBody: "link not valid",
 		},
 		{
 			name:         "CorrectLink",

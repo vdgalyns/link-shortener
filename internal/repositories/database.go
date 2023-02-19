@@ -114,6 +114,7 @@ func (d *Database) RemoveBatch(urlHashes []string, userID string) error {
 	mu := &sync.Mutex{}
 
 	for _, urlHash := range urlHashes {
+		urlHash := urlHash
 		g.Go(func() error {
 			select {
 			case <-ctx.Done():
@@ -122,7 +123,7 @@ func (d *Database) RemoveBatch(urlHashes []string, userID string) error {
 				mu.Lock()
 				defer mu.Unlock()
 				_, err := d.db.Exec(
-					"UPDATE shortened_links SET deleted_at = $1 WHERE hash = $2 AND user_id = $3 ",
+					"UPDATE shortened_links SET deleted_at = $1 WHERE hash = $2 AND user_id = $3",
 					time.Now(),
 					urlHash,
 					userID,
