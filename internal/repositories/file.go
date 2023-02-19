@@ -35,7 +35,7 @@ func (f *File) read(hash string) (entities.Link, error) {
 	if err = scanner.Err(); err != nil {
 		return url, err
 	}
-	return url, ErrNotFound
+	return url, ErrLinkNotFound
 }
 
 func (f *File) readAllByPredicate(predicate string) ([]entities.Link, error) {
@@ -83,7 +83,7 @@ func (f *File) Add(link entities.Link) error {
 	_, err := f.read(link.Hash)
 	if err != nil {
 		switch err {
-		case ErrNotFound:
+		case ErrLinkNotFound:
 			return f.write(link)
 		default:
 			return err
@@ -103,6 +103,10 @@ func (f *File) AddBatch(links []entities.Link) error {
 			return err
 		}
 	}
+	return nil
+}
+
+func (f *File) RemoveBatch(urlHashes []string, userID string) error {
 	return nil
 }
 

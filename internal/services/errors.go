@@ -3,6 +3,7 @@ package services
 import "errors"
 
 var (
-	ErrURLNotValid = errors.New("url not valid")
-	ErrURLIsExist  = errors.New("url is exist")
+	ErrLinkNotValid  = errors.New("link not valid")
+	ErrLinkIsExist   = errors.New("link is exist")
+	ErrLinkIsDeleted = errors.New("link is deleted")
 )

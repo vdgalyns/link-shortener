@@ -17,7 +17,7 @@ func ReadAndCreateCookieUserID(w http.ResponseWriter, r *http.Request) (string, 
 			if err != nil {
 				return value, false, err
 			}
-			err = WriteSigned(w, http.Cookie{Name: CookieNameUserID, Value: value})
+			err = WriteSigned(w, http.Cookie{Name: CookieNameUserID, Value: value, Path: "", Domain: r.URL.Host})
 			if err != nil {
 				return value, false, err
 			}

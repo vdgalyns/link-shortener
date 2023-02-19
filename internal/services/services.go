@@ -12,6 +12,7 @@ type Kind interface {
 	GetAllByUserID(userID string) ([]entities.Link, error)
 	Ping() error
 	AddBatch(originalURLs []string, userID string) ([]string, error)
+	RemoveBatch(urlHashes []string, userID string) error
 }
 
 type Services struct {
@@ -20,6 +21,6 @@ type Services struct {
 
 func NewServices(repositories *repositories.Repositories, config *config.Config) *Services {
 	return &Services{
-		Kind: NewUrls(repositories, config),
+		Kind: NewLinks(repositories, config),
 	}
 }

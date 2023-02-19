@@ -2,6 +2,7 @@ package repositories
 
 import (
 	"database/sql"
+
 	"github.com/vdgalyns/link-shortener/internal/config"
 	"github.com/vdgalyns/link-shortener/internal/entities"
 )
@@ -13,6 +14,7 @@ type Kind interface {
 	GetAllByUserID(userID string) ([]entities.Link, error)
 	Ping() error
 	AddBatch(links []entities.Link) error
+	RemoveBatch(urlHashes []string, userID string) error
 }
 
 type Repositories struct {

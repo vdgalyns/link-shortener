@@ -1,0 +1,1 @@
+DROP TABLE shortened_links;

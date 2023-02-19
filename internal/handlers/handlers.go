@@ -37,7 +37,11 @@ func (h *Handlers) Get(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
 	url, err := h.services.Get(id)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		status := http.StatusBadRequest
+		if errors.Is(err, services.ErrLinkIsDeleted) {
+			status = http.StatusGone
+		}
+		http.Error(w, err.Error(), status)
 		return
 	}
 	w.Header().Set("Location", url.OriginalURL)
@@ -59,7 +63,7 @@ func (h *Handlers) Add(w http.ResponseWriter, r *http.Request) {
 	shortURL, err := h.services.Add(string(body), value)
 	statusCode := http.StatusCreated
 	if err != nil {
-		if errors.Is(err, services.ErrURLIsExist) {
+		if errors.Is(err, services.ErrLinkIsExist) {
 			statusCode = http.StatusConflict
 		} else {
 			http.Error(w, err.Error(), http.StatusBadRequest)
@@ -87,7 +91,7 @@ func (h *Handlers) AddJSON(w http.ResponseWriter, r *http.Request) {
 	shortURL, err := h.services.Add(body.URL, value)
 	statusCode := http.StatusCreated
 	if err != nil {
-		if errors.Is(err, services.ErrURLIsExist) {
+		if errors.Is(err, services.ErrLinkIsExist) {
 			statusCode = http.StatusConflict
 		} else {
 			http.Error(w, err.Error(), http.StatusBadRequest)
@@ -183,6 +187,26 @@ func (h *Handlers) AddBatch(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
 	w.Write(outputJSON)
+}
+
+func (h *Handlers) DeleteBatch(w http.ResponseWriter, r *http.Request) {
+	value, _, err := cookies.ReadAndCreateCookieUserID(w, r)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	body := make([]string, 0)
+	err = json.NewDecoder(r.Body).Decode(&body)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	err = h.services.RemoveBatch(body, value)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	w.WriteHeader(http.StatusAccepted)
 }
 
 func NewHandlers(services *services.Services, config *config.Config) *Handlers {

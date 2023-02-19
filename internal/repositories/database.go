@@ -1,9 +1,13 @@
 package repositories
 
 import (
+	"context"
 	"database/sql"
+	"sync"
+	"time"
 
 	"github.com/vdgalyns/link-shortener/internal/entities"
+	"golang.org/x/sync/errgroup"
 )
 
 type Database struct {
@@ -14,11 +18,15 @@ func (d *Database) Get(hash string) (entities.Link, error) {
 	if d.db == nil {
 		return entities.Link{}, ErrDatabaseNotInitialized
 	}
+	var deletedAt sql.NullTime
 	link := entities.Link{}
-	row := d.db.QueryRow("SELECT hash, user_id, original_url FROM shortened_links WHERE hash = $1", hash)
-	err := row.Scan(&link.Hash, &link.UserID, &link.OriginalURL)
+	row := d.db.QueryRow("SELECT hash, user_id, original_url, deleted_at FROM shortened_links WHERE hash = $1", hash)
+	err := row.Scan(&link.Hash, &link.UserID, &link.OriginalURL, &deletedAt)
 	if err != nil {
-		return entities.Link{}, err
+		return link, err
+	}
+	if deletedAt.Valid {
+		return link, ErrLinkIsDeleted
 	}
 	return link, nil
 }
@@ -96,6 +104,39 @@ func (d *Database) AddBatch(links []entities.Link) error {
 		}
 	}
 	return tx.Commit()
+}
+
+func (d *Database) RemoveBatch(urlHashes []string, userID string) error {
+	if d.db == nil {
+		return ErrDatabaseNotInitialized
+	}
+	g, ctx := errgroup.WithContext(context.Background())
+	mu := &sync.Mutex{}
+
+	for _, urlHash := range urlHashes {
+		g.Go(func() error {
+			select {
+			case <-ctx.Done():
+				return nil
+			default:
+				mu.Lock()
+				defer mu.Unlock()
+				_, err := d.db.Exec(
+					"UPDATE shortened_links SET deleted_at = $1 WHERE hash = $2 AND user_id = $3 ",
+					time.Now(),
+					urlHash,
+					userID,
+				)
+				return err
+			}
+		})
+	}
+
+	go func() {
+		g.Wait()
+	}()
+
+	return nil
 }
 
 func NewDatabase(database *sql.DB) *Database {

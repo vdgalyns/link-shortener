@@ -12,7 +12,7 @@ func (m *Memory) Get(hash string) (entities.Link, error) {
 			return link, nil
 		}
 	}
-	return entities.Link{}, ErrNotFound
+	return entities.Link{}, ErrLinkNotFound
 }
 
 func (m *Memory) GetByOriginalURL(originalURL string) (entities.Link, error) {
@@ -21,7 +21,7 @@ func (m *Memory) GetByOriginalURL(originalURL string) (entities.Link, error) {
 			return link, nil
 		}
 	}
-	return entities.Link{}, ErrNotFound
+	return entities.Link{}, ErrLinkNotFound
 }
 
 func (m *Memory) GetAllByUserID(userID string) ([]entities.Link, error) {
@@ -53,6 +53,10 @@ func (m *Memory) AddBatch(links []entities.Link) error {
 			return err
 		}
 	}
+	return nil
+}
+
+func (m *Memory) RemoveBatch(urlHashes []string, userID string) error {
 	return nil
 }
 
