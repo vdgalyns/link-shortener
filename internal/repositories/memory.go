@@ -1,6 +1,9 @@
 package repositories
 
-import "github.com/vdgalyns/link-shortener/internal/entities"
+import (
+	"github.com/vdgalyns/link-shortener/internal/entities"
+	"time"
+)
 
 type Memory struct {
 	links []entities.Link
@@ -9,6 +12,9 @@ type Memory struct {
 func (m *Memory) Get(hash string) (entities.Link, error) {
 	for _, link := range m.links {
 		if link.Hash == hash {
+			if link.DeletedAt != "" {
+				return link, ErrLinkIsDeleted
+			}
 			return link, nil
 		}
 	}
@@ -57,6 +63,14 @@ func (m *Memory) AddBatch(links []entities.Link) error {
 }
 
 func (m *Memory) RemoveBatch(urlHashes []string, userID string) error {
+	for _, urlHash := range urlHashes {
+		for i := range m.links {
+			if m.links[i].Hash == urlHash && m.links[i].UserID == userID {
+				m.links[i].DeletedAt = time.Now().String()
+				break
+			}
+		}
+	}
 	return nil
 }
 

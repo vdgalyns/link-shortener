@@ -16,12 +16,16 @@ type Links struct {
 func (l *Links) Get(hash string) (entities.Link, error) {
 	_, err := entities.ValidateLinkHash(hash)
 	if err != nil {
-		if errors.Is(err, repositories.ErrLinkIsDeleted) {
-			return entities.Link{}, ErrLinkIsDeleted
-		}
 		return entities.Link{}, err
 	}
-	return l.repositories.Get(hash)
+	link, err := l.repositories.Get(hash)
+	if err != nil {
+		if errors.Is(err, repositories.ErrLinkIsDeleted) {
+			return link, ErrLinkIsDeleted
+		}
+		return link, err
+	}
+	return link, nil
 }
 
 func (l *Links) Add(originalURL, userID string) (string, error) {

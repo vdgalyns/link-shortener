@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"github.com/vdgalyns/link-shortener/internal/entities"
 	"os"
+	"time"
 )
 
 type File struct {
@@ -38,7 +39,7 @@ func (f *File) read(hash string) (entities.Link, error) {
 	return url, ErrLinkNotFound
 }
 
-func (f *File) readAllByPredicate(predicate string) ([]entities.Link, error) {
+func (f *File) readAll() ([]entities.Link, error) {
 	links := make([]entities.Link, 0)
 	file, err := f.open()
 	if err != nil {
@@ -51,11 +52,23 @@ func (f *File) readAllByPredicate(predicate string) ([]entities.Link, error) {
 		if err = json.Unmarshal(scanner.Bytes(), &link); err != nil {
 			return links, err
 		}
-		if link.OriginalURL == predicate || link.Hash == predicate || link.UserID == predicate {
-			links = append(links, link)
-		}
+		links = append(links, link)
 	}
 	return links, scanner.Err()
+}
+
+func (f *File) readAllByPredicate(predicate string) ([]entities.Link, error) {
+	links, err := f.readAll()
+	if err != nil {
+		return []entities.Link{}, err
+	}
+	suitableLinks := make([]entities.Link, 0)
+	for _, link := range links {
+		if link.OriginalURL == predicate || link.Hash == predicate || link.UserID == predicate {
+			suitableLinks = append(suitableLinks, link)
+		}
+	}
+	return suitableLinks, nil
 }
 
 func (f *File) write(link entities.Link) error {
@@ -68,7 +81,14 @@ func (f *File) write(link entities.Link) error {
 }
 
 func (f *File) Get(hash string) (entities.Link, error) {
-	return f.read(hash)
+	link, err := f.read(hash)
+	if err != nil {
+		return entities.Link{}, err
+	}
+	if link.DeletedAt != "" {
+		return entities.Link{}, ErrLinkIsDeleted
+	}
+	return link, nil
 }
 
 func (f *File) GetByOriginalURL(originalURL string) (entities.Link, error) {
@@ -107,6 +127,33 @@ func (f *File) AddBatch(links []entities.Link) error {
 }
 
 func (f *File) RemoveBatch(urlHashes []string, userID string) error {
+	file, err := os.OpenFile(f.filePath, os.O_RDONLY, 0644)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+	links, err := f.readAll()
+	if err != nil {
+		return err
+	}
+	for i := range links {
+		for _, urlHash := range urlHashes {
+			if links[i].Hash == urlHash && links[i].UserID == userID {
+				links[i].DeletedAt = time.Now().String()
+				break
+			}
+		}
+	}
+	err = os.Truncate(f.filePath, 0)
+	if err != nil {
+		return err
+	}
+	for _, link := range links {
+		err = f.write(link)
+		if err != nil {
+			return err
+		}
+	}
 	return nil
 }
 

@@ -9,6 +9,7 @@ type Link struct {
 	Hash        string `json:"hash"`
 	UserID      string `json:"user_id"`
 	OriginalURL string `json:"original_url"`
+	DeletedAt   string `json:"deleted_at"`
 }
 
 const sizeLinkHash = 3
