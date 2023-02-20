@@ -201,11 +201,7 @@ func (h *Handlers) DeleteBatch(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	err = h.services.RemoveBatch(body, value)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
+	h.services.RemoveBatch(body, value)
 	w.WriteHeader(http.StatusAccepted)
 }
 
