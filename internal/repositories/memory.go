@@ -49,9 +49,9 @@ func (m *Memory) GetAllByUserID(userID string) ([]entities.Link, error) {
 }
 
 func (m *Memory) Add(link entities.Link) error {
+	_, err := m.Get(link.Hash)
 	m.mu.Lock()
 	defer m.mu.Unlock()
-	_, err := m.Get(link.Hash)
 	if err != nil {
 		m.links = append(m.links, link)
 	}
