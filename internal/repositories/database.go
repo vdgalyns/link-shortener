@@ -122,7 +122,6 @@ func (d *Database) RemoveBatch(urlHashes []string, userID string) error {
 		return ErrDatabaseNotInitialized
 	}
 	d.mu.Lock()
-	// defer d.mu.Unlock()
 	g, ctx := errgroup.WithContext(context.Background())
 	for _, urlHash := range urlHashes {
 		urlHash := urlHash
@@ -131,8 +130,6 @@ func (d *Database) RemoveBatch(urlHashes []string, userID string) error {
 			case <-ctx.Done():
 				return nil
 			default:
-				d.mu.Lock()
-				defer d.mu.Unlock()
 				_, err := d.db.Exec(
 					"UPDATE shortened_links SET deleted_at = $1 WHERE hash = $2 AND user_id = $3",
 					time.Now(),
