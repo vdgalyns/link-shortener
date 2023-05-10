@@ -1,24 +1,35 @@
 package repositories
 
 import (
+	"context"
 	"database/sql"
+	"sync"
+	"time"
 
 	"github.com/vdgalyns/link-shortener/internal/entities"
+	"golang.org/x/sync/errgroup"
 )
 
 type Database struct {
 	db *sql.DB
+	mu *sync.RWMutex
 }
 
 func (d *Database) Get(hash string) (entities.Link, error) {
 	if d.db == nil {
 		return entities.Link{}, ErrDatabaseNotInitialized
 	}
+	d.mu.RLock()
+	defer d.mu.RUnlock()
+	var deletedAt sql.NullTime
 	link := entities.Link{}
-	row := d.db.QueryRow("SELECT hash, user_id, original_url FROM shortened_links WHERE hash = $1", hash)
-	err := row.Scan(&link.Hash, &link.UserID, &link.OriginalURL)
+	row := d.db.QueryRow("SELECT hash, user_id, original_url, deleted_at FROM shortened_links WHERE hash = $1", hash)
+	err := row.Scan(&link.Hash, &link.UserID, &link.OriginalURL, &deletedAt)
 	if err != nil {
-		return entities.Link{}, err
+		return link, err
+	}
+	if deletedAt.Valid {
+		return link, ErrLinkIsDeleted
 	}
 	return link, nil
 }
@@ -27,6 +38,8 @@ func (d *Database) GetByOriginalURL(originalURL string) (entities.Link, error) {
 	if d.db == nil {
 		return entities.Link{}, ErrDatabaseNotInitialized
 	}
+	d.mu.RLock()
+	defer d.mu.RUnlock()
 	link := entities.Link{}
 	row := d.db.QueryRow("SELECT hash, user_id, original_url FROM shortened_links WHERE original_url = $1", originalURL)
 	err := row.Scan(&link.Hash, &link.UserID, &link.OriginalURL)
@@ -40,6 +53,8 @@ func (d *Database) Add(link entities.Link) error {
 	if d.db == nil {
 		return ErrDatabaseNotInitialized
 	}
+	d.mu.Lock()
+	defer d.mu.Unlock()
 	_, err := d.db.Exec(
 		`INSERT INTO shortened_links (hash, user_id, original_url) VALUES($1, $2, $3)`,
 		link.Hash,
@@ -53,6 +68,8 @@ func (d *Database) GetAllByUserID(userID string) ([]entities.Link, error) {
 	if d.db == nil {
 		return nil, ErrDatabaseNotInitialized
 	}
+	d.mu.RLock()
+	defer d.mu.RUnlock()
 	rows, err := d.db.Query("SELECT hash, user_id, original_url FROM shortened_links WHERE user_id = $1", userID)
 	if err != nil {
 		return nil, err
@@ -80,6 +97,8 @@ func (d *Database) AddBatch(links []entities.Link) error {
 	if d.db == nil {
 		return ErrDatabaseNotInitialized
 	}
+	d.mu.Lock()
+	defer d.mu.Unlock()
 	tx, err := d.db.Begin()
 	if err != nil {
 		return err
@@ -98,6 +117,38 @@ func (d *Database) AddBatch(links []entities.Link) error {
 	return tx.Commit()
 }
 
+func (d *Database) RemoveBatch(urlHashes []string, userID string) error {
+	if d.db == nil {
+		return ErrDatabaseNotInitialized
+	}
+	d.mu.Lock()
+	g, ctx := errgroup.WithContext(context.Background())
+	for _, urlHash := range urlHashes {
+		urlHash := urlHash
+		g.Go(func() error {
+			select {
+			case <-ctx.Done():
+				return nil
+			default:
+				_, err := d.db.Exec(
+					"UPDATE shortened_links SET deleted_at = $1 WHERE hash = $2 AND user_id = $3",
+					time.Now(),
+					urlHash,
+					userID,
+				)
+				return err
+			}
+		})
+	}
+
+	go func() {
+		g.Wait()
+		d.mu.Unlock()
+	}()
+
+	return nil
+}
+
 func NewDatabase(database *sql.DB) *Database {
-	return &Database{db: database}
+	return &Database{db: database, mu: &sync.RWMutex{}}
 }

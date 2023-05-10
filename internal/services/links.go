@@ -8,23 +8,30 @@ import (
 	"github.com/vdgalyns/link-shortener/internal/repositories"
 )
 
-type Urls struct {
+type Links struct {
 	repositories *repositories.Repositories
 	config       *config.Config
 }
 
-func (u *Urls) Get(hash string) (entities.Link, error) {
+func (l *Links) Get(hash string) (entities.Link, error) {
 	_, err := entities.ValidateLinkHash(hash)
 	if err != nil {
 		return entities.Link{}, err
 	}
-	return u.repositories.Get(hash)
+	link, err := l.repositories.Get(hash)
+	if err != nil {
+		if errors.Is(err, repositories.ErrLinkIsDeleted) {
+			return link, ErrLinkIsDeleted
+		}
+		return link, err
+	}
+	return link, nil
 }
 
-func (u *Urls) Add(originalURL, userID string) (string, error) {
+func (l *Links) Add(originalURL, userID string) (string, error) {
 	valid := entities.ValidateURL(originalURL)
 	if !valid {
-		return "", ErrURLNotValid
+		return "", ErrLinkNotValid
 	}
 	linkHash, err := entities.CreateLinkHash(originalURL)
 	if err != nil {
@@ -35,42 +42,42 @@ func (u *Urls) Add(originalURL, userID string) (string, error) {
 		UserID:      userID,
 		OriginalURL: originalURL,
 	}
-	err = u.repositories.Add(link)
+	err = l.repositories.Add(link)
 	var pgErr *pgconn.PgError
 	if errors.As(err, &pgErr) {
 		if pgErr.Code == "23505" {
-			existedLink, err := u.repositories.GetByOriginalURL(link.OriginalURL)
+			existedLink, err := l.repositories.GetByOriginalURL(link.OriginalURL)
 			if err != nil {
 				return "", err
 			}
-			return u.config.BaseURL + "/" + existedLink.Hash, ErrURLIsExist
+			return l.config.BaseURL + "/" + existedLink.Hash, ErrLinkIsExist
 		}
 	}
 	if err != nil {
 		return "", err
 	}
-	readyURL := u.config.BaseURL + "/" + linkHash
+	readyURL := l.config.BaseURL + "/" + linkHash
 	return readyURL, nil
 }
 
-func (u *Urls) GetAllByUserID(userID string) ([]entities.Link, error) {
+func (l *Links) GetAllByUserID(userID string) ([]entities.Link, error) {
 	_, err := entities.ValidateUserID(userID)
 	if err != nil {
 		return nil, err
 	}
-	return u.repositories.GetAllByUserID(userID)
+	return l.repositories.GetAllByUserID(userID)
 }
 
-func (u *Urls) Ping() error {
-	return u.repositories.Ping()
+func (l *Links) Ping() error {
+	return l.repositories.Ping()
 }
 
-func (u *Urls) AddBatch(originalURLs []string, userID string) ([]string, error) {
+func (l *Links) AddBatch(originalURLs []string, userID string) ([]string, error) {
 	links := make([]entities.Link, 0, len(originalURLs))
 	for _, originalURL := range originalURLs {
 		valid := entities.ValidateURL(originalURL)
 		if !valid {
-			return nil, ErrURLNotValid
+			return nil, ErrLinkNotValid
 		}
 		linkHash, err := entities.CreateLinkHash(originalURL)
 		if err != nil {
@@ -83,18 +90,22 @@ func (u *Urls) AddBatch(originalURLs []string, userID string) ([]string, error) 
 		}
 		links = append(links, link)
 	}
-	if err := u.repositories.AddBatch(links); err != nil {
+	if err := l.repositories.AddBatch(links); err != nil {
 		return nil, err
 	}
 	output := make([]string, 0, len(originalURLs))
 	for _, link := range links {
-		output = append(output, u.config.BaseURL+"/"+link.Hash)
+		output = append(output, l.config.BaseURL+"/"+link.Hash)
 	}
 	return output, nil
 }
 
-func NewUrls(repositories *repositories.Repositories, config *config.Config) *Urls {
-	return &Urls{
+func (l *Links) RemoveBatch(urlHashes []string, userID string) error {
+	return l.repositories.RemoveBatch(urlHashes, userID)
+}
+
+func NewLinks(repositories *repositories.Repositories, config *config.Config) *Links {
+	return &Links{
 		repositories: repositories,
 		config:       config,
 	}

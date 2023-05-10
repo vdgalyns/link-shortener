@@ -3,6 +3,7 @@ package repositories
 import "errors"
 
 var (
-	ErrNotFound               = errors.New("not found")
+	ErrLinkNotFound           = errors.New("link not found")
 	ErrDatabaseNotInitialized = errors.New("database not initialized")
+	ErrLinkIsDeleted          = errors.New("link is deleted")
 )

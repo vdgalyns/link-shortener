@@ -24,6 +24,7 @@ func NewRouter(h *handlers.Handlers) chi.Router {
 	r.Get("/api/user/urls", h.GetUrls)
 	r.Post("/api/shorten/batch", h.AddBatch)
 	r.Get("/ping", h.Ping)
+	r.Delete("/api/user/urls", h.DeleteBatch)
 
 	return r
 }
